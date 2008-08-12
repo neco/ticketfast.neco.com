@@ -1,0 +1,115 @@
+<% if @tickets.size > 0 or @viewed_tickets.size > 0 %>
+<script type="text/javascript">
+results_fresh = "<%= @tickets.size %>"
+results_all = "<%= (@tickets + @viewed_tickets).size %>"
+clearLoadedTickets()
+<% if @event_dates %>
+$('event-date-select').update('<option value="0">-- View all</option><%= 
+@event_dates.collect{|datetime| 
+  "<option value=\"#{datetime}\" #{params[:event_date] and params[:event_date] != "0" and datetime == Time.parse(params[:event_date]) ? 'selected=\"selected\"' : ''}>#{datetime.strftime "%m/%d %I:%M %P"}</option>" if datetime
+}.join %>')
+<% end %>
+
+</script>
+Results: <%= @tickets.size %>
+<table cellspacing="0" class="data-grid">
+<tr>
+<th>
+  Event
+</th><th>
+  Venue
+</th><th>
+  Date
+</th><th>
+  Section
+</th><th>
+  Row
+</th><th>
+  Seat
+</th>
+<th><input type="checkbox" onchange="toggleChecked($('tickets_form'), this)" /></th>
+<th>&nbsp;</th>
+</tr>
+
+<% 2.times do |i| %>
+
+<% 
+
+tickets = nil
+viewed = false
+if i == 1 
+  tickets = @viewed_tickets
+  viewed = true 
+else
+  tickets = @tickets
+end
+
+tickets.each do |ticket| %>
+
+<%= '<tbody class="viewed-ticket">' if viewed %>
+<tr>
+<td>
+<% if ticket.event %>
+  <%= ticket.event.name %> (<%= link_to ticket.event.code, :action => "event", :id => ticket.event.id %>)
+<% end %>
+</td>
+<td>
+<% if ticket.event %>
+<% if ticket.event.venue %>  <%= ticket.event.venue.name %> (<%= ticket.event.venue.code %>)
+<% end %>
+<% end %>
+</td>
+<td>
+<% if ticket.event %>
+  <%= ticket.event.occurs_at.strftime("%m/%d %I:%M %P") if ticket.event.occurs_at %>
+<% end %>
+</td>
+<td>
+<%= ticket.section %>
+</td>
+<td>
+<%= ticket.row %>
+</td>
+<td>
+<%= ticket.seat %>
+</td>
+<th>
+  <input type="checkbox" name="tickets[]" value="<%= ticket.id %>" />
+</th>
+<th>
+  <%= link_to_function "More", "Element.toggle('ticket_info_#{ticket.id}');loadTicketData(#{ticket.id})" %>
+</th>
+</tr>
+<%= "</tbody>" if viewed %>
+<tbody class="ticket-info" id="ticket_info_<%= ticket.id %>" style="display:none">
+<tr>
+  <td colspan="8">Loading ticket data...</td>
+</tr>
+</tbody>
+
+<% end %>
+
+<% end %>
+</table>
+<script type="text/javascript">setViewedTicketsDisplay()</script>
+<br /><br />
+<%= link_to_function "E-mail selected", "toggleEmailForm();$('recipient_sel').focus()" %>
+
+<div style="display:none" id="email_sel_form_div">
+  <div class="form-spacer"></div>
+  <input type="hidden" name="results" id="email_sel_results" />
+  Recipient e-mail address<br />
+  <input type="text" name="recipient" id="recipient_sel" />
+  <div class="form-spacer"></div>
+  E-mail Subject<br />
+  <input type="text" name="subject" value="Your Electronic Tickets are attached" />
+</div>
+<div class="form-spacer"></div>
+Customer name<br />
+<input type="text" name="customer_name" />
+
+<br /><br />
+<input type="submit" value="Download Selected" id="submit_tag" />
+<% else %>
+There are no tickets to display.
+<% end %>

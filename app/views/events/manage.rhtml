@@ -1,0 +1,75 @@
+<%= form_tag({:action => "manage"}, :name => 'findevent') %>
+Find an event to rename 
+ <%= text_field_with_auto_complete :event, :name %>
+<%= submit_tag 'Load' %>
+</form>
+
+<% if @events.size > 0 %>
+Viewing <%= @events.size %> events<br />
+<%= form_tag({:action => "update_unnamed"}, :name => 'updateunnamed') %>
+<table cellspacing="0" class="data-grid">
+
+<tr>
+<th>
+  Preview
+</th>
+<th>
+  Event Code
+</th><th>
+  Event Name
+</th><th>
+  Venue Code
+</th><th>
+  Venue Name
+</th><th>
+  Event Text from a Ticket
+</th></tr>
+<% @events.each do |event| %>
+<tr>
+<td>
+<%= link_to "PDF", :controller => "tickets", :action => "preview_pdf", :id => event.tickets.first.id if event.tickets.size > 0 %>
+</td>
+<td>
+<%= event.code %>
+</td>
+<td>
+
+
+
+<input class="text-field" id="event_name_<%= event.id %>" name="event_names[<%= event.id %>]" size="30" 
+type="text" value="<%= h event.name %>" 
+/><div class="auto_complete" id="event_name_<%= event.id %>_auto_complete"></div><script 
+type="text/javascript">
+//<![CDATA[
+var event_name_<%= event.id %>_auto_completer = new Ajax.Autocompleter('event_name_<%= event.id %>', 
+'event_name_<%= event.id %>_auto_complete', 
+'/events/auto_complete_for_event_name', {})
+//]]>
+
+</script>
+
+
+</td>
+<td>
+<%= event.venue.code if event.venue %>
+</td>
+<td>
+<% if event.venue %>
+<% if event.venue.name and !event.venue.name.empty? %>
+<%= event.venue.name %>
+<% else %>
+<input type="text" class="text-field" name="venue_names[<%= event.venue.id %>]" />
+<% end;end %>
+</td>
+<td>
+<%= event.tickets.first.event_text if event.tickets.size > 0 %>
+</td>
+</tr>
+<% end %>
+<table>
+
+<input type="submit" value="Save" />
+<%= end_form_tag %>
+<% else %>
+There are no events to display.
+<% end %>

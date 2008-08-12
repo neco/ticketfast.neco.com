@@ -1,0 +1,51 @@
+<% if @venues.size > 0 %>
+
+
+Viewing <%= @venues.size %> venues<br />
+<%= form_tag :action => "update" %>
+<table cellspacing="0" class="data-grid">
+
+<tr>
+<th>
+  Preview
+</th>
+<th>
+  Venue Code
+</th><th>
+  Venue Name
+</th><th>
+  Venue Keyword
+</th><th>
+  Event Text from a Ticket
+</th><th># Events</th></tr>
+<% @venues.each do |venue| %>
+<tr>
+<td>
+<%= link_to "PDF", :controller => "tickets", :action => "preview_pdf", :id => venue.tickets.first.id if venue.tickets.size > 0 %>
+</td>
+<td>
+<%= venue.code %>
+</td>
+<td>
+<input type="text" class="text-field" name="venue_names[<%= venue.id %>]" value="<%=h venue.name %>" />
+</td>
+<td>
+<input type="text" class="text-field" name="venue_keywords[<%= venue.id %>]" value="<%=h venue.keyword %>" />
+</td>
+<td>
+<%= venue.tickets.first.event_text if venue.tickets.size > 0 %>
+</td>
+<th>
+  <%= venue.events.size %> 
+  
+  <%= link_to_remote "del", :url => {:action => "destroy", :id => venue.id}, :complete => "submitVenueSearchForm()" unless venue.events.size > 0 %>
+</th>
+</tr>
+<% end %>
+<table>
+
+<input type="submit" value="Save" />
+<%= end_form_tag %>
+<% else %>
+There are no venues to display.
+<% end %>

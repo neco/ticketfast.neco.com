@@ -1,0 +1,3 @@
+# These paths are relative to RAILS_ROOT
+tmp_dir: tmp
+pdf_dir: tmp/pdfs

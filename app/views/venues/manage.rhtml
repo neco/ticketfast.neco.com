@@ -1,0 +1,25 @@
+<script type="text/javascript">
+function submitVenueSearchForm() {
+  new Ajax.Updater('venues_list', '/venues/search_by_code', {
+    asynchronous:true, loading:Element.show('search-indicator'), complete:Element.hide('search-indicator'), evalScripts:true, parameters:Form.serialize($('search-by-code'))
+  })
+}
+</script>
+
+<%= form_remote_tag(:url => {:action => "search_by_code"}, :html => {:action => url_for(:action => "search_by_code"), :name => "search_by_code", :id => "search-by-code"}, :update => :venues_list) %>
+
+Search by venue code <input type="text" name="code" value="<%=h params[:code] %>">
+<%= image_tag("indicator.gif", :id => "search-indicator", :style => "display: none") %>
+<%= observe_form("search-by-code", :update => :venues_list, 
+  :url => {:action => "search_by_code"}, 
+  :loading => "Element.show('search-indicator')", 
+  :frequency => 0.5,
+  :complete => "Element.hide('search-indicator')") 
+  %>
+<br />
+<%= submit_tag "Search" %>
+</form>
+
+<div id="venues_list">
+  <%= render :partial => "list" %>
+</div>

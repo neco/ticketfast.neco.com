@@ -1,0 +1,35 @@
+<br />
+<% if @events.size > 0 %>
+<table cellspacing="0" class="data-grid">
+<tr><th>
+  Event Code
+</th><th>
+  Event Name
+</th><th>
+  Event Text from a Ticket
+</th><th width="100">
+  Tickets
+</th></tr>
+<% @events.each do |event| %>
+<tr>
+<td>
+<%= event.code %>
+</td>
+<td>
+<%= event.name %>
+</td>
+<td>
+<%= event.tickets.first.event_text if event.tickets.size > 0 %>
+</td>
+<td>
+<%= event.tickets.size %> 
+<% if event.tickets.size > 0 %>
+(<%= link_to "view", :controller => "tickets", :action => "event", :id => event.id %>)
+<% end %>
+</td>
+</tr>
+<% end %>
+<table>
+<% else %>
+There are no events to display.
+<% end %>

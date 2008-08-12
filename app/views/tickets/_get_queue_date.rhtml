@@ -1,0 +1,26 @@
+<div class="spacer"></div>
+<%
+events = Event.find_all_by_name params[:event_name]
+if events.size > 0
+%>
+
+<select name="event_id">
+
+<%=
+
+events.collect{|event| datetime = event.occurs_at
+  "<option value=\"#{event.id}\">#{datetime.strftime "%m/%d %I:%M %P"}</option>" if datetime
+}.join %>
+</select>
+OR <div class="spacer"></div>
+<% else %>
+<% end %>
+
+Select date
+<input type="text" onclick="displayDatePicker('custom_date[<%=@ticket.id%>]')" name="custom_date[<%=@ticket.id%>]" />
+<div class="spacer"></div>
+Select time<br />
+
+
+<%= select_time(Time.parse('8pm')) %>
+<div class="spacer"></div>
