@@ -18,18 +18,6 @@ class TicketsMailer < ActionMailer::Base
       a.filename = 'tickets.pdf'
     end
   end
-
-  def wiseguys_pdfs
-    @recipients = "ticketfast@neco.com"
-    @subject = "Wiseguys Tickets"
-    @from = 'NECO <ticketfast@neco.com>'
-    Dir.glob("#{RAILS_ROOT}/tmp/wiseguys*pdf").each do |filepath|
-      attachment "application/pdf" do |a|
-        a.body = File.read filepath
-        a.filename = filepath.match(/[^\/]+$/)[0]
-      end
-    end
-  end
   
   def unparsed filepath
     @recipients = "unprocessedtf@neco.com"
