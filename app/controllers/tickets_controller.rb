@@ -8,6 +8,55 @@ class TicketsController < ApplicationController
 #{:event => :venue}, :conditions => ['viewed = ?', true]
     @event_dates = Ticket.find_event_dates_by_search("")
   end
+  
+  
+  
+  def list
+    results =  params[:results] || 5
+    startIndex = params[:startIndex] || 0
+    sort = params[:sort] || 'ticket.id'
+    order_by = sort.gsub(/^.*?\.?([^\.]+)\.([^\.]+)$/, '\1s.\2')
+    dir = params[:dir] || 'asc'
+    
+    find_conditions = ['1=1']
+=begin
+    [[ignore_event, 'events.name'], 
+      [ignore_section, 'ticket_network_ticket_groups.section'],
+      [ignore_row, 'ticket_network_ticket_groups.row']].each do |arr, field|
+      arr.split(',').each do |val|
+        find_conditions[0] += " AND #{field} NOT LIKE ?"
+        find_conditions << "%#{val.strip}%"
+      end
+    end
+=end
+
+    find_include = {:event => :venue}
+        
+    @tickets = Ticket.find :all,
+      :include => find_include, 
+      :conditions => find_conditions,
+      :offset => startIndex, 
+      :limit => results,
+      :order => "#{order_by} #{dir}"
+      
+    ticket_json = @tickets.to_json(
+      :only => [:id, :event_id, :section, :row, :seat], :include => {
+        :event => {:only => [:name, :venue_id, :occurs_at, :code], :include => {
+          :venue => {:only => :name}
+        } }
+      }
+    )
+    
+    # need to come up with or find a nice way of manipulating JSON without using string interpolation...
+    render :text => %[{"totalRecords":#{Ticket.find(:all, :include => find_include, :conditions => find_conditions).size},
+      "recordsReturned":#{@tickets.size},
+      "startIndex":#{startIndex},
+      "sort":"#{sort}",
+      "dir":"#{dir}",
+      "records":#{ticket_json}}]
+  end
+  
+  
 
   def check_mail
     tickets = IncomingMailHandler.process_new_mail
@@ -23,7 +72,7 @@ class TicketsController < ApplicationController
   
   def event
     @event = Event.find params[:id]
-    @tickets = @event.tickets.find(:all, :conditions => ['viewed != ?', true])
+    @tickets = @event.tickets.find(:all, :conditions => ['viewed = ?', false])
     @viewed_tickets = @event.tickets.find(:all, :conditions => ['viewed = ?', true])
     render :action => "index"
   end

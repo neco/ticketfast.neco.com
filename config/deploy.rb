@@ -1,12 +1,12 @@
 default_run_options[:pty] = true
 
-set :application, "ticketfast"
-set :repository,  "git@github.com:benjohnson/ticketfast.git"
+set :application, "ticketfast.neco.com"
+set :repository,  "git@github.com:benjohnson/ticketfast.neco.com.git"
 set :keep_releases, 5
 
 set :scm, :git
 set :deploy_via, :remote_cache # prevent git from cloning on every deploy
-set :deploy_to, "/var/rails/#{application}"
+set :deploy_to, "/var/www/#{application}"
 set :branch, "master"
 
 set :mongrel_conf, "#{current_path}/config/mongrel_cluster.yml" # must be set after :deploy_to is set
@@ -24,6 +24,8 @@ task :after_update_code do
   %w{/config/database.yml /config/mongrel_cluster.yml /bin /pdfs}.each do |file|
     run "ln -nfs #{shared_path}#{file} #{release_path}#{file}"
   end
+  
+  deploy.cleanup
 end
 
 namespace :deploy do
@@ -50,20 +52,5 @@ namespace :deploy do
   desc "Custom stop task for mongrel cluster"
   task :stop, :roles => :app do
     deploy.mongrel.stop
-  end
-  
-  namespace :web do
-    desc "Serve up custom maintenance page."
-    task :disable, :roles => :web do
-      require "erb"
-      on_rollback { run "rm #{shared_path}/system/maintenance.html" }
-      
-      reason = ENV['REASON']
-      deadline = ENV['UNTIL']
-      template = File.read("app/views/layouts/maintenance.html.erb")
-      page = ERB.new(template).result(binding)
-      
-      put page, "#{shared_path}/system/maintenance.html", :mode => 0644
-    end
   end
 end

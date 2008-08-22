@@ -27,5 +27,6 @@ class VenuesController < ApplicationController
   
   def destroy
     Venue.find(params[:id]).destroy
+    render :text => ''
   end
 end
