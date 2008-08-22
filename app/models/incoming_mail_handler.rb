@@ -135,7 +135,7 @@ class IncomingMailHandler < ActionMailer::Base
           rescue;raise;end
         end
       end
-    rescue;end
+    rescue;raise;end
     ticket_count
   end
 end
