@@ -31,7 +31,6 @@ class IncomingMailHandler < ActionMailer::Base
       
       # Remove owner restrictions and decrypt the PDF
       `#{RAILS_ROOT}/bin/guapdf -y #{filepath}`
-      exit
       if File.exists?( filepath.gsub(/\.pdf$/, '.decrypted.pdf') )
         `rm #{filepath}`
         filepath = filepath.gsub(/\.pdf$/, '.decrypted.pdf') 
@@ -43,25 +42,29 @@ class IncomingMailHandler < ActionMailer::Base
       
       # Loop through each PDF page, parse text, create Ticket, rename to {ticket.id}.pdf and place in pdfs directory
       Dir.glob("#{tmp_dir}/page_*pdf").each do |page_filepath|
+        puts 'doing a page'
         `pdftotext #{page_filepath}`
         text_filepath = page_filepath.gsub /pdf$/, 'txt'
         pdf_text = File.read(text_filepath)        
-        
+        puts 'trying to parse!'
         # Attempt to parse the text-converted PDF
         ticket_parser = TicketParser.new(pdf_text)
         ticket_parser.parse!
         
         # If parsing failed, save the PDF and add it to the queue????
         unless ticket_parser.parsed?
+          puts "no luck"
           ticket = Ticket.create 
 
           # Place the PDF ticket in the right place and clean up temporary pdftotext output file
           `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
           
           ticket_count += 1 
+          exit
           next
         end
         
+        puts "we are good!!"; exit
         # Attempt to parse a datetime out of event text
         begin
           event_hash[:occurs_at] = DateTime.parse ticket_hash[:event_text]

@@ -8,9 +8,11 @@ class TicketParser
   def parse!
     parsed_data = nil
     %w(default mlb no_purchaser mlb_alt mlb_2007 exchange).each do |format|
+      puts "trying #{format}!!"
       parsed_data = send('parse_' + format)
       break if parsed?
     end
+    puts "helllllllo"
     self.venue_code = event_hash[:code].match(/^[^0-9]+/)[0] unless venue_code or !event_hash[:code]
   end
   
