@@ -25,7 +25,7 @@ class IncomingMailHandler < ActionMailer::Base
       end
       
       # Remove owner restrictions and decrypt the PDF
-      `guapdf -y #{filepath}`
+      `#{RAILS_ROOT}/bin/guapdf -y #{filepath}`
       if File.exists?( filepath.gsub(/\.pdf$/, '.decrypted.pdf') )
         `rm #{filepath}`
         filepath = filepath.gsub(/\.pdf$/, '.decrypted.pdf') 
