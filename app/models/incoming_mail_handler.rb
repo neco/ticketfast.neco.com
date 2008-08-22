@@ -92,7 +92,7 @@ class IncomingMailHandler < ActionMailer::Base
         
         if event
           ticket = event.tickets.create(ticket_parser.ticket)
-          event.set_venue!(venue_code) unless event.venue
+          event.set_venue!(ticket_parser.venue_code) unless event.venue
         else
           ticket = Ticket.create ticket_parser.ticket
         end
