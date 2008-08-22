@@ -14,7 +14,7 @@ class IncomingMailHandler < ActionMailer::Base
     end    
     
     email.attachments.each do |attachment|
-      puts "dealing with attachment"
+      puts "dealing with attachment" 
       
       # Make sure the MIME type indicates the part is a PDF attachment
       next unless attachment.content_type == 'application/pdf'
