@@ -14,8 +14,12 @@ class IncomingMailHandler < ActionMailer::Base
     end    
     
     email.attachments.each do |attachment|
+      puts "dealing with attachment"
+      
       # Make sure the MIME type indicates the part is a PDF attachment
       next unless attachment.content_type == 'application/pdf'
+      
+      puts "it is a pdf"
       
       filename = "tmp.pdf"
       filepath = tmp_dir + '/' + filename
@@ -26,6 +30,7 @@ class IncomingMailHandler < ActionMailer::Base
       
       # Remove owner restrictions and decrypt the PDF
       `#{RAILS_ROOT}/bin/guapdf -y #{filepath}`
+      exit
       if File.exists?( filepath.gsub(/\.pdf$/, '.decrypted.pdf') )
         `rm #{filepath}`
         filepath = filepath.gsub(/\.pdf$/, '.decrypted.pdf') 
@@ -122,7 +127,7 @@ class IncomingMailHandler < ActionMailer::Base
             num = IncomingMailHandler.receive(msg)
             ticket_count += num
             imap.store(message_id, '+FLAGS', [:Seen])
-            #imap.store(message_id, "+FLAGS", [:Flagged])
+            imap.store(message_id, "+FLAGS", [:Flagged]) if num > 0
           rescue;end
         end
       end
