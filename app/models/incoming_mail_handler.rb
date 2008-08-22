@@ -60,11 +60,10 @@ class IncomingMailHandler < ActionMailer::Base
           `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
           
           ticket_count += 1 
-          exit
           next
         end
         
-        puts "we are good!!"; exit
+        puts "we are good!!"
         # Attempt to parse a datetime out of event text
         begin
           event_hash[:occurs_at] = DateTime.parse ticket_hash[:event_text]
