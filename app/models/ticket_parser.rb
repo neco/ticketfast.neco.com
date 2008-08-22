@@ -3,6 +3,7 @@ class TicketParser
   
   def initialize(pdf_text)
     self.pdf_text = pdf_text
+    self.event = self.ticket = {}
   end
   
   def parse!
@@ -13,7 +14,7 @@ class TicketParser
       break if parsed?
     end
     puts "helllllllo"
-    self.venue_code = event_hash[:code].match(/^[^0-9]+/)[0] unless venue_code or !event_hash[:code]
+    self.venue_code = event[:code].match(/^[^0-9]+/)[0] unless venue_code or !event[:code]
   end
   
   def parsed?
