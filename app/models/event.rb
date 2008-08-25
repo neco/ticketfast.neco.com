@@ -2,6 +2,7 @@ class Event < ActiveRecord::Base
   has_many :tickets, :dependent => :destroy
   belongs_to :venue
   validates_uniqueness_of :code, :allow_nil => true
+  named_scope :unnamed, :conditions => "name = '' OR name IS NULL"
   
   def set_venue! venue_code
     self.venue = nil

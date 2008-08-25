@@ -1,0 +1,84 @@
+.yui-g
+  - if params[:action] == 'event' 
+    = link_to "All Tickets", :action => 'index'
+    \/ Tickets for 
+    = "#{@event.name} (#{@event.code})"
+  - else 
+    %form{:onsubmit => 'performSearch();updateEventDates();return false'}
+      Search 
+      = text_field_with_auto_complete :event, :name
+
+      Event date
+      %select#event-date-select{:name => 'event_date'}
+        %option{:value => 0} -- View all
+  
+      or
+      = link_to_function "Search by fields", "Element.toggle($('adv_search_div'))" 
+
+      #adv_search_div{:style => "#{'display:none;' unless params[:action] == "search_by_fields"}padding-top:10px;"}
+        %table
+          %tr
+            %td{:align => "right"} Section
+            %td
+              %input{:type => 'text', :id => 'query-section', :value => h(params[:section]), :size => 5}/
+            %td{:align => 'right'} Order #
+            %td
+              %input{:type => 'text', :id => 'query-order_number', :value => h(params[:order_number])}/
+          %tr
+            %td{:align => 'right'} Row
+            %td
+              %input{:type => 'text', :id => 'query-row', :value => h(params[:row]), :size => 5}/
+            %td{:align => 'right'} Barcode #
+            %td
+              %input{:type => 'text', :id => 'query-barcode_number', :value => h(params[:barcode_number])}/
+          %tr
+            %td{:align => 'right'} Seat
+            %td
+              %input{:type => 'text', :id => 'query-seat', :value => h(params[:seat]), :size => 5}/
+            %td{:align => 'right'} Customer Name
+            %td
+              %input{:type => 'text', :id => 'customer_name', :value => h(params[:customer_name])}/
+          %tr
+            %td{:align => 'right'} Event Code
+            %td
+              %input{:type => 'text', :id => 'event_code', :value => h(params[:event_code]), :size => 5}
+            %td{:align => 'right'} Show All
+            %td
+              %input{:type => 'checkbox', :id => 'show_all', :value => true}
+      %br/
+      %input{:type => 'submit', :value => 'Search'}/
+
+  %br/
+  %br/
+  
+  = form_tag({:action => "email_or_download_tickets"}, :name => "tickets_form", :id => "tickets_form")
+
+  #ticket-details
+
+  .yui-skin-sam
+    #ps_dt-container
+    #ps_dt-paging
+
+  
+  #email-or-download
+    = link_to_function "E-mail selected", "toggleEmailForm();$('recipient_sel').focus()"
+    #email_sel_form_div{:style => 'display:none'}
+      .form-spacer
+      %input#email_sel_results{:type => 'hidden', :name => 'results'}/
+      Recipient e-mail address
+      %br/
+      %input#recipient_sel{:type => 'text', :name => 'recipient'}/
+      .form-spacer
+      E-mail Subject
+      %br/
+      %input{:type => 'text', :name => 'subject', :value => 'Your Electronic Tickets are attached'}/
+    .form-spacer
+    Customer name
+    %br/
+    %input{:type => 'text', :name => 'customer_name'}/
+    %br/
+    %br/
+    %input#submit_tag{:type => 'submit', :value => 'Download Selected'}/
+    
+
+  ='</form>'

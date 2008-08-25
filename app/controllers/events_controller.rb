@@ -1,6 +1,8 @@
 class EventsController < ApplicationController
   auto_complete_for :event, :name, :select => 'distinct name'
-
+  
+  
+  
   alias_method :real_auto_complete_for_event_name, :auto_complete_for_event_name
 
   def auto_complete_for_event_name

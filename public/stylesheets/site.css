@@ -1,6 +1,15 @@
 a { color: #222; }
 a:hover { color: #666; }
 
+#adv_search_div td { padding:3px; }
+
+#ticket-details th {font-weight: bold; padding-right: 10px;width:140px;vertical-align:top;}
+#ticket-details td {width:300px;}
+#ticket-details div {padding:15px;}
+#ticket-details h1 {font-weight:bold;font-size:120%;}
+
+#email-or-download {margin:15px 0;}
+
 table.data-grid {
   width: 100%;
   border-left: 1px solid #aaa;

@@ -51,10 +51,10 @@ class IncomingMailHandler < ActionMailer::Base
         ticket_parser = TicketParser.new(pdf_text)
         ticket_parser.parse!
         
-        # If parsing failed, save the PDF and add it to the queue????
+        # If parsing failed, save the PDF and add it to the queue
         unless ticket_parser.parsed?
           puts "no luck"
-          ticket = Ticket.create 
+          ticket = Ticket.create(:unparsed => true)
 
           # Place the PDF ticket in the right place and clean up temporary pdftotext output file
           `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`

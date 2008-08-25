@@ -679,9 +679,7 @@ var event_name_<%= ticket.id %>_auto_completer = new Ajax.Autocompleter('event_n
 </td>
 <td>
 
-<div id="ticket_event_text_<%= ticket.id %>">
-<%= !ticket.event_text? ? '-' : ticket.event_text  %> 
-</div>
+<div id="ticket_event_text_<%= ticket.id %>"><%= !ticket.event_text? ? '-' : ticket.event_text  %></div>
 
 <script type="text/javascript">
 new Ajax.InPlaceEditor( "ticket_event_text_<%= ticket.id %>", '<%= url_for(edit_ticket_field_url(:field => 'event_text', :id => ticket.id)) %>', {})
@@ -690,9 +688,7 @@ new Ajax.InPlaceEditor( "ticket_event_text_<%= ticket.id %>", '<%= url_for(edit_
 </td>
 <td>
 
-<div id="ticket_section_<%= ticket.id %>">
-<%= !ticket.section? ? '-' : ticket.section  %>
-</div>
+<div id="ticket_section_<%= ticket.id %>"><%= !ticket.section? ? '-' : ticket.section  %></div>
 
 <script type="text/javascript">
 new Ajax.InPlaceEditor( "ticket_section_<%= ticket.id %>", '<%= url_for(edit_ticket_field_url(:field => 'section', :id => ticket.id)) %>', {})
@@ -701,9 +697,7 @@ new Ajax.InPlaceEditor( "ticket_section_<%= ticket.id %>", '<%= url_for(edit_tic
 </td>
 <td>
 
-<div id="ticket_row_<%= ticket.id %>">
-<%= !ticket.row? ? '-' : ticket.row  %>
-</div>
+<div id="ticket_row_<%= ticket.id %>"><%= !ticket.row? ? '-' : ticket.row  %></div>
 
 <script type="text/javascript">
 new Ajax.InPlaceEditor( "ticket_row_<%= ticket.id %>", '<%= url_for(edit_ticket_field_url(:field => 'row', :id => ticket.id)) %>', {})
@@ -712,9 +706,7 @@ new Ajax.InPlaceEditor( "ticket_row_<%= ticket.id %>", '<%= url_for(edit_ticket_
 </td>
 <td>
 
-<div id="ticket_seat_<%= ticket.id %>">
-<%= !ticket.seat? ? '-' : ticket.seat  %>
-</div>
+<div id="ticket_seat_<%= ticket.id %>"><%= !ticket.seat? ? '-' : ticket.seat  %></div>
 
 <script type="text/javascript">
 new Ajax.InPlaceEditor( "ticket_seat_<%= ticket.id %>", '<%= url_for(edit_ticket_field_url(:field => 'seat', :id => ticket.id)) %>', {})

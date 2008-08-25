@@ -3,34 +3,24 @@
 %html
   %head
     %title TicketFast Manager
-    =javascript_include_tag 'http://yui.yahooapis.com/2.5.2/build/yahoo-dom-event/yahoo-dom-event.js'
-    =javascript_include_tag 'http://yui.yahooapis.com/2.5.2/build/element/element-beta-min.js'
-    =javascript_include_tag 'http://yui.yahooapis.com/2.5.2/build/datasource/datasource-beta-min.js'
-    =javascript_include_tag 'http://yui.yahooapis.com/2.5.2/build/json/json-min.js'
-    =javascript_include_tag 'http://yui.yahooapis.com/2.5.2/build/connection/connection-min.js'
-    =javascript_include_tag 'http://yui.yahooapis.com/2.5.2/build/datatable/datatable-beta-min.js'
+    =javascript_include_tag "http://yui.yahooapis.com/combo?2.5.2/build/yahoo-dom-event/yahoo-dom-event.js&2.5.2/build/connection/connection-min.js&2.5.2/build/element/element-beta-min.js&2.5.2/build/datasource/datasource-beta-min.js&2.5.2/build/datatable/datatable-beta-min.js&2.5.2/build/json/json-min.js"
     =stylesheet_link_tag 'http://yui.yahooapis.com/2.5.2/build/datatable/assets/skins/sam/datatable.css'
     =stylesheet_link_tag 'http://yui.yahooapis.com/2.5.1/build/reset-fonts-grids/reset-fonts-grids.css'
-    =javascript_include_tag :defaults
+    =javascript_include_tag 'prototype','scriptaculous','application','dt_defs', :cache => true
     =stylesheet_link_tag 'site.css'
   %body
-    .yui-t7#doc2
+    #doc4
       #hd
         = link_to "Tickets", :controller => "tickets" 
         \-
         = link_to "Manage Events", :controller => "events", :action => "manage"
-        = "(#{Event.find_unnamed.size})"
+        = "(#{Event.count(:conditions => "name = '' OR name IS NULL")})"
         \-
         = link_to "Manage Venues", :controller => "venues", :action => "manage" 
         \-
         = link_to "Tickets Queue", :controller => "tickets", :action => "view_queue" 
-        \----
-        = link_to "Check for Tickets", :controller => "tickets", :action => "check_mail" 
-        \- 
-        = link_to "View by Event", :controller => "events" 
+        = "(#{Ticket.count(:conditions => 'event_id = 0 or event_id is null')})"
         \-
-        
-        
         Total tickets: 
         = Ticket.count
         %br/

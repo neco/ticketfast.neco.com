@@ -1,0 +1,38 @@
+#details-sub-div
+  %h1
+    Ticket Details 
+    ="(#{link_to_function 'hide', "$('details-sub-div').hide()"})"
+  %table
+    %tr
+      %th ID:
+      %td= @ticket.id
+    %tr
+      %th Barcode:
+      %td= @ticket.barcode_number 
+    %tr
+      %th Purchaser:
+      %td= @ticket.purchaser 
+    %tr
+      %th Event text:
+      %td= h @ticket.event_text 
+    %tr
+      %th Order number:
+      %td= @ticket.order_number 
+    %tr
+      %th Entered system on:
+      %td= @ticket.created_at.strftime("%m/%d/%y") 
+  
+    %tr
+      %td{:colspan => 2}
+        - if @ticket.viewed?
+          = link_to_remote "Mark as new", :url => {:action => "mark_new", :id => @ticket.id}, :complete => "submitSearchForm()"
+          %br/
+        - if @ticket.ticket_actions.size > 0 
+          %b Actions taken:
+          %br/
+          .ticket-actions
+            - @ticket.ticket_actions.each do |ta| customer = ta.customer_name? ? ta.customer_name : "(left blank)" 
+              = ta.recipient_email? ? "E-mailed to #{customer} &lt;#{ta.recipient_email}&gt;" : "Downloaded for  #{customer} on #{ta.created_at.strftime "%m/%d/%y at %l:%M %p"}"
+              .form-spacer
+        - else
+          No recorded actions

@@ -1,16 +1,7 @@
 class TicketsController < ApplicationController
   auto_complete_for :event, :name, :select => 'distinct name'
-
-  def index
-    @tickets = [] #Ticket.find :all, :order => Ticket.order_clause, :limit => 50, :include => {:event 
-#=> :venue}, :conditions => ['viewed != ?', true]
-    @viewed_tickets = []#Ticket.find :all, :order => Ticket.order_clause, :limit => 20, :include => 
-#{:event => :venue}, :conditions => ['viewed = ?', true]
-    @event_dates = Ticket.find_event_dates_by_search("")
-  end
   
-  
-  
+  # Action called by the YUI datatable
   def list
     results =  params[:results] || 5
     startIndex = params[:startIndex] || 0
@@ -18,19 +9,34 @@ class TicketsController < ApplicationController
     order_by = sort.gsub(/^.*?\.?([^\.]+)\.([^\.]+)$/, '\1s.\2')
     dir = params[:dir] || 'asc'
     
-    find_conditions = ['1=1']
-=begin
-    [[ignore_event, 'events.name'], 
-      [ignore_section, 'ticket_network_ticket_groups.section'],
-      [ignore_row, 'ticket_network_ticket_groups.row']].each do |arr, field|
-      arr.split(',').each do |val|
-        find_conditions[0] += " AND #{field} NOT LIKE ?"
-        find_conditions << "%#{val.strip}%"
-      end
-    end
-=end
-
     find_include = {:event => :venue}
+    
+    find_conditions = ['(event_id IS NOT NULL AND event_id != 0)']
+    params[:conditions].each do |field,val|
+      find_conditions[0] += " AND #{field} LIKE ?"
+      find_conditions << "#{val.strip}%"
+    end if params[:conditions]
+    
+    if(params[:event_name] and !params[:event_name].blank?)
+      find_conditions[0] += ' AND events.name = ?'
+      find_conditions << params[:event_name].strip
+    end
+    
+    if(params[:event_code] and !params[:event_code].blank?)
+      find_conditions[0] += ' AND events.code = ?'
+      find_conditions << params[:event_code].strip
+    end
+    
+    if(params[:customer_name] and !params[:customer_name].blank?)
+      find_conditions[0] += ' AND ticket_actions.customer_name = ?'
+      find_conditions << params[:customer_name].strip
+      find_include = [find_include, :ticket_actions]
+    end
+    
+    unless(params[:show_all]) 
+      find_conditions[0] += ' AND (viewed IS NULL OR viewed = ?)'    
+      find_conditions << false
+    end
         
     @tickets = Ticket.find :all,
       :include => find_include, 
@@ -47,14 +53,19 @@ class TicketsController < ApplicationController
       }
     )
     
-    # need to come up with or find a nice way of manipulating JSON without using string interpolation...
-    render :text => %[{"totalRecords":#{Ticket.find(:all, :include => find_include, :conditions => find_conditions).size},
+    render :text => %[{"totalRecords":#{Ticket.count(:all, :include => find_include, :conditions => find_conditions)},
       "recordsReturned":#{@tickets.size},
       "startIndex":#{startIndex},
       "sort":"#{sort}",
       "dir":"#{dir}",
       "records":#{ticket_json}}]
   end
+  
+  def get_details
+    @ticket = Ticket.find params[:id]
+    render :partial => 'ticket_data' if request.xhr?
+  end
+  
   
   
 
@@ -64,11 +75,7 @@ class TicketsController < ApplicationController
     redirect_to :action => "index"
   end
   
-  # ajax only, returns partial
-  def get_ticket_data
-    @ticket = Ticket.find params[:id]
-    render :partial => 'ticket_data' if request.xhr?
-  end
+
   
   def event
     @event = Event.find params[:id]
@@ -92,7 +99,6 @@ class TicketsController < ApplicationController
 
   def view_queue
     @tickets = Ticket.find :all, :conditions => 'event_id = 0 or event_id is null', :order => 'created_at desc', :limit => 50
-    @tic = Ticket.find :first, :conditions => 'event_id > 5'
   end
   
   def get_queue_date_partial
@@ -120,38 +126,6 @@ class TicketsController < ApplicationController
     render :text => %[Success, assigned to #{event.name} which occurs #{event.occurs_at.strftime "%m/%d %I:%M %P"}<br /><br /><a href="javascript:eventAssign('#{event.name}', #{event.id}, #{ticket.id})">Assign to other tickets</a>]
   end
 
-  def search_by_fields
-    conditions = '1=1'
-    conditions += " AND events.name LIKE '#{params[:event][:name]}%' " if params[:event][:name] and !params[:event][:name].empty?
-    conditions += " AND events.code LIKE '#{params[:event_code]}%' " if params[:event_code] and !params[:event_code].empty?
-    [:section, :row, :seat, :order_number, :barcode_number].each do |field|
-      conditions += " AND tickets.#{field.to_s} = '#{params[field].gsub(/'/, "\\'")}'" unless !params[field] or params[field].empty?
-    end
-    conditions_without_date = conditions
-    unless params[:event_date] == "0"
-      datetime = Time.parse params[:event_date]
-      conditions += " AND events.occurs_at = '#{datetime.to_s :db}'"
-    end
-    viewed_conditions = conditions
-    if params[:customer_name] and !params[:customer_name].empty?
-      viewed_conditions += " AND ticket_actions.customer_name LIKE '%#{params[:customer_name].gsub(/'/, "\\'")}%'"
-      @tickets = nil    
-    else
-      @tickets = Ticket.find_by_search('', "#{conditions} AND viewed!=1")
-    end
-    @viewed_tickets = Ticket.find_by_search('', "#{viewed_conditions} AND viewed=1", (@tickets.nil? ? 
-true : false) )
-    if @tickets.nil?
-      @tickets, @viewed_tickets = @viewed_tickets, []
-    end
-    @event_dates = Ticket.find_event_dates_by_search('', "#{conditions_without_date}")
-    unless request.xhr?
-      render :action => "index"
-    else
-      render :partial => "list"
-    end
-  end
-  
   def email_or_download_tickets
     # Create ticket actions to log this action
     ta_proto = TicketAction.new :customer_name => params[:customer_name]
@@ -189,7 +163,8 @@ minutes."
   def preview_pdf
     send_file Ticket.find(params[:id]).pdf_filepath
   end
- 
+
+private
   def create_composite_pdf ticket_ids
     ticket_ids.each do |id|
       Ticket.find(id).view!
@@ -198,10 +173,5 @@ minutes."
     dest_filepath = "#{RAILS_ROOT}/#{Setting['tmp_dir']}/all_#{ticket_ids.first}.pdf"
     `pdftk #{ticket_ids.collect{|t| "#{src_path}/#{t}.pdf "}.join} cat output #{dest_filepath}`
     dest_filepath
-  end
-  
-  def delete_all
-    Ticket.destroy_all
-    redirect_to :action => "index"
   end
 end

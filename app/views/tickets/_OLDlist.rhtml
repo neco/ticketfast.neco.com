@@ -9,7 +9,7 @@ $('event-date-select').update('<option value="0">-- View all</option><%=
   "<option value=\"#{datetime}\" #{params[:event_date] and params[:event_date] != "0" and datetime == Time.parse(params[:event_date]) ? 'selected=\"selected\"' : ''}>#{datetime.strftime "%m/%d %I:%M %P"}</option>" if datetime
 }.join %>')
 <% end %>
-
+'
 </script>
 Results: <%= @tickets.size %>
 <table cellspacing="0" class="data-grid">
