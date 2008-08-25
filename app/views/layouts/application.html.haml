@@ -18,19 +18,21 @@
       #hd
         = link_to "Tickets", :controller => "tickets" 
         \-
-        = link_to "View by Event", :controller => "events" 
-        \-
         = link_to "Manage Events", :controller => "events", :action => "manage"
         = "(#{Event.find_unnamed.size})"
         \-
         = link_to "Manage Venues", :controller => "venues", :action => "manage" 
         \-
         = link_to "Tickets Queue", :controller => "tickets", :action => "view_queue" 
-        \-
+        \----
         = link_to "Check for Tickets", :controller => "tickets", :action => "check_mail" 
         \- 
+        = link_to "View by Event", :controller => "events" 
+        \-
+        
+        
         Total tickets: 
-        = Ticket.find(:all).size 
+        = Ticket.count
         %br/
         %br/
         = flash[:success] + "<br /><br />" if flash[:success]
