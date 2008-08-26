@@ -24,7 +24,7 @@ class TicketParser
   
   def parse!
     parsed_data = nil
-    %w(default mlb_2008 mlb no_purchaser mlb_alt mlb_2007 exchange).each do |format|
+    %w(default default_alt mlb_2008 mlb no_purchaser mlb_alt mlb_2007 exchange).each do |format|
       parsed_data = send('parse_' + format)
       if parsed?
         self.ticket_format = format
@@ -61,7 +61,7 @@ class TicketParser
   end
   
   def parsed?
-    !parsed_ticket.empty? && !parsed_event.empty?
+    !parsed_ticket.empty? #&& !parsed_event.empty?
   end
 
 private
@@ -96,6 +96,21 @@ private
                      :viewed => false,
                      :event_text => ticket_data[8]}
       self.parsed_event = { :code => ticket_data[7] }
+    end
+  end
+  
+  def parse_default_alt
+    ticket_data = pdf_text.match(/PURCHASED BY ORDER NUMBER\n\n([^0-9]+) ([0-9a-z -]+)\n\nSECTION\n\n([a-z0-9]+)[^\n]+\n\n([^\n]+).*?Section: ([^\n]+)\n\nRow: ([^\n]+)\n\nSeat: ([^\n]+)\n\n([0-9]{4} ?[0-9]{4} ?[0-9]{4} ?[0-9]{4})/im)
+    if ticket_data
+      self.parsed_ticket = {:purchaser => ticket_data[1],
+                     :order_number => ticket_data[2],
+                     :section => ticket_data[5],
+                     :row => ticket_data[6],
+                     :seat => ticket_data[7],
+                     :barcode_number => ticket_data[8].gsub(/ /, ''),
+                     :viewed => false,
+                     :event_text => ticket_data[4]}
+      self.parsed_event = { :code => ticket_data[3] }
     end
   end
   
