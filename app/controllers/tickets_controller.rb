@@ -11,7 +11,7 @@ class TicketsController < ApplicationController
     
     find_include = {:event => :venue}
     
-    find_conditions = ['(event_id IS NOT NULL AND event_id != 0)']
+    find_conditions = ['unparsed = ?', false]
     params[:conditions].each do |field,val|
       find_conditions[0] += " AND #{field} LIKE ?"
       find_conditions << "#{val.strip}%"
