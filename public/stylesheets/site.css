@@ -5,7 +5,7 @@ a:hover { color: #666; }
 
 #ticket-details th {font-weight: bold; padding-right: 10px;width:140px;vertical-align:top;}
 #ticket-details td {width:300px;}
-#ticket-details div {padding:15px;}
+#details-sub-div {padding:15px;}
 #ticket-details h1 {font-weight:bold;font-size:120%;}
 
 #email-or-download {margin:15px 0;}
