@@ -7,7 +7,7 @@ class TicketParser
       self.pdf_text = pdf_text
     elsif mixed.class == Ticket
       out_path = "#{RAILS_ROOT}/tmp/#{mixed.id}_text}"
-      `pdftotext #{mixed.pdf_filepath} #{out_path}`
+      system "pdftotext #{mixed.pdf_filepath} #{out_path} >& /dev/null"
       self.pdf_text = File.read(out_path)
       self.ticket_obj = mixed
       `rm -f #{out_path}`
