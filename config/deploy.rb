@@ -39,6 +39,7 @@ def run_local cmd
 end
 
 namespace :dev do
+  desc 'Import DB and PDFs'
   task :sync do
     dev.import_production_db
     dev.import_pdfs

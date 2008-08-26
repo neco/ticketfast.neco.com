@@ -4,7 +4,7 @@ class TicketParser
   # initialize with pdf text or a ticket object
   def initialize(mixed)
     if mixed.class == String
-      self.pdf_text = pdf_text
+      self.pdf_text = mixed
     elsif mixed.class == Ticket
       out_path = "#{RAILS_ROOT}/tmp/#{mixed.id}_text}"
       system "pdftotext #{mixed.pdf_filepath} #{out_path} >& /dev/null"

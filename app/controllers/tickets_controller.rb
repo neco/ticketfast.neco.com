@@ -112,11 +112,7 @@ class TicketsController < ApplicationController
   
   def parse
     @ticket = Ticket.find params[:id]
-    out_path = "#{RAILS_ROOT}/tmp/#{@ticket.id}_text}"
-    `pdftotext #{@ticket.pdf_filepath} #{out_path}`
-    pdf_text = File.read(out_path)
-    `rm -f #{out_path}`
-    ticket_parser = TicketParser.new(pdf_text)
+    ticket_parser = TicketParser.new(@ticket)
     ticket_parser.parse!
     out = '<pre>'
     if(ticket_parser.parsed?) 
@@ -134,23 +130,12 @@ class TicketsController < ApplicationController
   
   def parse_and_save
     @ticket = Ticket.find params[:id]
-    out_path = "#{RAILS_ROOT}/tmp/#{@ticket.id}_text}"
-    `pdftotext #{@ticket.pdf_filepath} #{out_path}`
-    pdf_text = File.read(out_path)
-    `rm -f #{out_path}`
-    ticket_parser = TicketParser.new(pdf_text)
+    ticket_parser = TicketParser.new(@ticket)
     ticket_parser.parse!
     if(ticket_parser.parsed?) 
       ticket_parser.update_from_parse!(@ticket)
     end
     render :text => @ticket.attributes.inspect
-  end
-  
-  def reparse_all
-    Ticket.unparsed.find(:all, :order => 'created_at desc', :limit => 25).each do |ticket|
-      ticket_parser = TicketParser.new(ticket)
-      ticket_parser.parse_and_save!
-    end
   end
   
   def get_queue_date_partial
