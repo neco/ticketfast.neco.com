@@ -53,10 +53,11 @@ class TicketParser
     end
     
     self.parsed_ticket[:event_id] = event.id if event
-    self.saved_ticket = tic.update_attributes(parsed_ticket.merge({:unparsed => false}))
+    self.saved_ticket = tic
+    saved_ticket.update_attributes(parsed_ticket.merge({:unparsed => false}))
     
     event.set_venue!(parsed_venue_code) if event and !event.venue
-    self.saved_ticket.save
+    saved_ticket.save
   end
   
   def parsed?
