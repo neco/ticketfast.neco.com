@@ -107,7 +107,7 @@ class TicketsController < ApplicationController
     `pdftotext #{@ticket.pdf_filepath} #{out_path}`
     pdf_text = File.read(out_path)
     `rm -f #{out_path}`
-    render :text => pdf_text
+    send_data pdf_text, :filename => "ticket_#{@ticket.id}.txt"
   end
   
   def get_queue_date_partial
