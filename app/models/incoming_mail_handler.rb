@@ -64,38 +64,9 @@ class IncomingMailHandler < ActionMailer::Base
         end
         
         puts "we are good!!"
-        # Attempt to parse a datetime out of event text
-        begin
-          ticket_parser.event[:occurs_at] = DateTime.parse ticket_parser.ticket[:event_text]
-        rescue # Failed, let's try to do it ourselves
-          begin
-            date_match = ticket_parser.ticket[:event_text].match(/(([a-z]+\.? [0-9]+,? [0-9]{4} [0-9]+)(:[0-9]{2})?(AM|PM|A|P))/i)
-
-            date_str = nil
-            if date_match[3].nil?
-              date_str = date_match[2] + ":00" + date_match[4]
-            else
-              date_str = date_match[1]
-            end
-            ticket_parser.event[:occurs_at] = DateTime.parse date_str
-          rescue;end
-        end
         
-        event = Event.find_all_by_code(ticket_parser.event[:code])
-        
-        # Create event if the event code does not exist yet
-        if event.size == 0 and ticket_parser.event[:code]
-          event = Event.create(ticket_parser.event)
-        else
-          event = event.first
-        end
-        
-        if event
-          ticket = event.tickets.create(ticket_parser.ticket)
-          event.set_venue!(ticket_parser.venue_code) unless event.venue
-        else
-          ticket = Ticket.create ticket_parser.ticket
-        end
+        ticket_parser.create_from_parse!
+        ticket = ticket_parser.created_ticket
         
         # Place the PDF ticket in the right place and clean up temporary pdftotext output file
         `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`

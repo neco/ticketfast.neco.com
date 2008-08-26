@@ -3,6 +3,8 @@ class Ticket < ActiveRecord::Base
   belongs_to :event
   has_many :ticket_actions, :order => "created_at DESC"
   
+  named_scope :unparsed, :conditions => {:unparsed => true}
+  
   def before_destroy
     `rm #{RAILS_ROOT}/#{Setting['pdf_dir']}/#{id}.pdf`
   end

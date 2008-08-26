@@ -98,7 +98,7 @@ class TicketsController < ApplicationController
   end
 
   def view_queue
-    @tickets = Ticket.find :all, :conditions => 'event_id = 0 or event_id is null', :order => 'created_at desc', :limit => 50
+    @tickets = Ticket.unparsed.find(:all, :order => 'created_at desc', :limit => 50)
   end
   
   def view_text
@@ -110,9 +110,52 @@ class TicketsController < ApplicationController
     send_data pdf_text, :filename => "ticket_#{@ticket.id}.txt"
   end
   
+  def parse
+    @ticket = Ticket.find params[:id]
+    out_path = "#{RAILS_ROOT}/tmp/#{@ticket.id}_text}"
+    `pdftotext #{@ticket.pdf_filepath} #{out_path}`
+    pdf_text = File.read(out_path)
+    `rm -f #{out_path}`
+    ticket_parser = TicketParser.new(pdf_text)
+    ticket_parser.parse!
+    out = '<pre>'
+    if(ticket_parser.parsed?) 
+      out += "Ticket format: #{ticket_parser.ticket_format}\n\n"
+      out += "Ticket: #{ticket_parser.parsed_ticket.inspect}\n\n"
+      out += "Event: #{ticket_parser.parsed_event.inspect}\n\n"
+      out += "Venue code: #{ticket_parser.parsed_venue_code.inspect}\n\n"
+      out += "Parse and save: <a href='/tickets/parse_and_save/#{@ticket.id}'>save</a>"
+    else
+      out += "Unable to parse"
+    end
+    out += '</pre>'
+    render :text => out
+  end
+  
+  def parse_and_save
+    @ticket = Ticket.find params[:id]
+    out_path = "#{RAILS_ROOT}/tmp/#{@ticket.id}_text}"
+    `pdftotext #{@ticket.pdf_filepath} #{out_path}`
+    pdf_text = File.read(out_path)
+    `rm -f #{out_path}`
+    ticket_parser = TicketParser.new(pdf_text)
+    ticket_parser.parse!
+    if(ticket_parser.parsed?) 
+      ticket_parser.update_from_parse!(@ticket)
+    end
+    render :text => @ticket.attributes.inspect
+  end
+  
+  def reparse_all
+    Ticket.unparsed.find(:all, :order => 'created_at desc', :limit => 25).each do |ticket|
+      ticket_parser = TicketParser.new(ticket)
+      ticket_parser.parse_and_save!
+    end
+  end
+  
   def get_queue_date_partial
     @ticket = Ticket.find params[:ticket_id]
-    render :partial => 'get_queue_date' 
+    render :partial => 'get_queue_date'
   end
 
   def queue_set_event
