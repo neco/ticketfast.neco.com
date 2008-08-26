@@ -19,7 +19,7 @@
         = link_to "Manage Venues", :controller => "venues", :action => "manage" 
         \-
         = link_to "Tickets Queue", :controller => "tickets", :action => "view_queue" 
-        = "(#{Ticket.count(:conditions => 'event_id = 0 or event_id is null')})"
+        = "(#{Ticket.unparsed.count})"
         \-
         Total tickets: 
         = Ticket.count
