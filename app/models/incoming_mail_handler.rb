@@ -45,7 +45,7 @@ class IncomingMailHandler < ActionMailer::Base
         puts 'doing a page'
         `pdftotext #{page_filepath}`
         text_filepath = page_filepath.gsub /pdf$/, 'txt'
-        pdf_text = File.read(text_filepath)        
+        pdf_text = File.read(text_filepath)
         puts 'trying to parse!'
         # Attempt to parse the text-converted PDF
         ticket_parser = TicketParser.new(pdf_text)

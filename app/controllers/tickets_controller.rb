@@ -101,6 +101,15 @@ class TicketsController < ApplicationController
     @tickets = Ticket.find :all, :conditions => 'event_id = 0 or event_id is null', :order => 'created_at desc', :limit => 50
   end
   
+  def view_text
+    @ticket = Ticket.find params[:id]
+    out_path = "#{RAILS_ROOT}/tmp/#{@ticket.id}_text}"
+    `pdftotext #{@ticket.pdf_filepath} #{out_path}`
+    pdf_text = File.read(out_path)
+    `rm -f #{out_path}`
+    render :text => pdf_text
+  end
+  
   def get_queue_date_partial
     @ticket = Ticket.find params[:ticket_id]
     render :partial => 'get_queue_date' 
