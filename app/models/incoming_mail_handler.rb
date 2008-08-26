@@ -18,7 +18,7 @@ class IncomingMailHandler < ActionMailer::Base
       
       # Make sure the MIME type indicates the part is a PDF attachment
       puts attachment.content_type
-      next unless attachment.content_type == 'application/pdf'
+      next unless ['application/pdf', 'application/octet-stream'].include?(attachment.content_type) 
       
       puts "it is a pdf"
       
