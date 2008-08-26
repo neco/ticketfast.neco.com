@@ -44,20 +44,12 @@ div.recipient-box {
   left: 50px;
 }
 
-div.ticket-actions {
-  font-size: .8em;
-}
-
 div.form-spacer {
   height: 10px;
 }
 
 div.spacer {
   height: 10px;
-}
-
-tbody.viewed-ticket td {
-  background: #bbb;
 }
 
 div.auto_complete {
