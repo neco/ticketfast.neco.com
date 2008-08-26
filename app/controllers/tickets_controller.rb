@@ -130,11 +130,7 @@ class TicketsController < ApplicationController
   
   def parse_and_save
     @ticket = Ticket.find params[:id]
-    ticket_parser = TicketParser.new(@ticket)
-    ticket_parser.parse!
-    if(ticket_parser.parsed?) 
-      ticket_parser.update_from_parse!(@ticket)
-    end
+    ticket_parser = TicketParser.new(@ticket).parse_and_save!
     render :text => @ticket.attributes.inspect
   end
   

@@ -24,7 +24,7 @@ class TicketParser
   
   def parse!
     parsed_data = nil
-    %w(default mlb no_purchaser mlb_alt mlb_2007 exchange).each do |format|
+    %w(default mlb_2008 mlb no_purchaser mlb_alt mlb_2007 exchange).each do |format|
       parsed_data = send('parse_' + format)
       if parsed?
         self.ticket_format = format
@@ -56,6 +56,7 @@ class TicketParser
     self.saved_ticket = tic.update_attributes(parsed_ticket.merge({:unparsed => false}))
     
     event.set_venue!(parsed_venue_code) if event and !event.venue
+    self.saved_ticket.save
   end
   
   def parsed?
@@ -167,6 +168,21 @@ private
               :seat => ticket_data[4],
               :barcode_number => ticket_data[5],
               :event_text => ticket_data[6]} 
+    end
+  end
+  
+  def parse_mlb_2008
+    ticket_data = pdf_text.match(/([0-9]{4} ?[0-9]{4} ?[0-9]{4} ?[0-9]{4}).*?This.*?SECTION\n(.*?)\n.*?ROW\n(.*?)\n.*?SEAT\n(.*?)\n.*?NO REENTRY\.\n\nEVENT\n(.*?)\n.*?Name: (.*?) Confirmation Number: ([^ ]* [^ ]*).*?Event Information:.*?\n([a-z0-9]+)/im)
+    if ticket_data
+      self.parsed_ticket = {:purchaser => ticket_data[6],
+                     :order_number => ticket_data[7],
+                     :section => ticket_data[2],
+                     :row => ticket_data[3],
+                     :seat => ticket_data[4],
+                     :barcode_number => ticket_data[1].gsub(/ /, ''),
+                     :viewed => false,
+                     :event_text => ticket_data[5]}
+      self.parsed_event = { :code => ticket_data[8] }
     end
   end
 end
