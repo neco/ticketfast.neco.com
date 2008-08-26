@@ -130,8 +130,10 @@ class IncomingMailHandler < ActionMailer::Base
             num = IncomingMailHandler.receive(msg)
             ticket_count += num
             imap.store(message_id, '+FLAGS', [:Seen])
-            imap.store(message_id, "+FLAGS", [:Flagged]) if num > 0
-          rescue;end
+            imap.store(message_id, "+FLAGS", [:Flagged]) if num == 0
+          rescue
+            imap.store(message_id, "+FLAGS", [:Flagged])
+          end
         end
       end
     rescue;raise;end
