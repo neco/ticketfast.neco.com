@@ -9,7 +9,7 @@ set :deploy_via, :remote_cache # prevent git from cloning on every deploy
 set :deploy_to, "/var/www/#{application}"
 set :branch, "master"
 
-set :mongrel_conf, "#{current_path}/config/mongrel_cluster.yml" # must be set after :deploy_to is set
+set :thin_conf, "#{current_path}/config/thin.yml" # must be set after :deploy_to is set
 
 set :user, 'root'
 set :runner, 'root'
@@ -21,7 +21,7 @@ role :db,  "server2.neco.com", :primary => true
 
 task :after_update_code do
   # handle shared files
-  %w{/config/database.yml /config/mongrel_cluster.yml /bin /pdfs}.each do |file|
+  %w{/config/database.yml /config/thin.yml /bin /pdfs}.each do |file|
     run "ln -nfs #{shared_path}#{file} #{release_path}#{file}"
   end
   
@@ -68,28 +68,28 @@ namespace :dev do
 end
 
 namespace :deploy do
-  namespace :mongrel do
+  namespace :thin do
     [ :stop, :start, :restart ].each do |t|
-      desc "#{t.to_s.capitalize} the mongrel appserver"
+      desc "#{t.to_s.capitalize} the thin servers"
       task t, :roles => :app do
-        #invoke_command checks the use_sudo variable to determine how to run the mongrel_rails command
-        invoke_command "mongrel_rails cluster::#{t.to_s} -C #{mongrel_conf}", :via => run_method
+        #invoke_command checks the use_sudo variable to determine how to run the thin command
+        invoke_command "thin #{t.to_s} -C #{thin_conf}", :via => run_method
       end
     end
   end
 
-  desc "Custom restart task for mongrel cluster"
+  desc "Custom restart task for thin cluster"
   task :restart, :roles => :app, :except => { :no_release => true } do
-    deploy.mongrel.restart
+    deploy.thin.restart
   end
 
-  desc "Custom start task for mongrel cluster"
+  desc "Custom start task for thin cluster"
   task :start, :roles => :app do
-    deploy.mongrel.start
+    deploy.thin.start
   end
 
-  desc "Custom stop task for mongrel cluster"
+  desc "Custom stop task for thin cluster"
   task :stop, :roles => :app do
-    deploy.mongrel.stop
+    deploy.thin.stop
   end
 end
