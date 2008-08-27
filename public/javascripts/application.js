@@ -31,5 +31,12 @@ var getTicketDetails = function(ticket_id) {
 }
 
 var updateEventDates = function() {
-  //
+  new Ajax.Request("/tickets/get_event_dates", {
+    method: 'post',
+    parameters: {event_name:$F('event_name'), event_id:$F('event-date-select')},
+    onSuccess: function(transport) {
+      eval(transport.responseText)
+    }
+  });
+
 }

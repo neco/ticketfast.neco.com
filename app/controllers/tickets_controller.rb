@@ -27,6 +27,11 @@ class TicketsController < ApplicationController
       find_conditions << params[:event_code].strip
     end
     
+    if(params[:event_id] and !params[:event_id].blank?)
+      find_conditions[0] += ' AND events.id = ?'
+      find_conditions << params[:event_id].strip
+    end
+    
     if(params[:customer_name] and !params[:customer_name].blank?)
       find_conditions[0] += ' AND ticket_actions.customer_name = ?'
       find_conditions << params[:customer_name].strip
@@ -64,6 +69,12 @@ class TicketsController < ApplicationController
   def get_details
     @ticket = Ticket.find params[:id]
     render :partial => 'ticket_data' if request.xhr?
+  end
+  
+  def get_event_dates
+    @events = Event.find_all_by_name(params[:event_name])
+    @event_id = params[:event_id]
+    render :partial => 'event_dates' if request.xhr?
   end
   
   
