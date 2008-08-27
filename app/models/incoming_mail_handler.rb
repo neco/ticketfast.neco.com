@@ -49,7 +49,7 @@ class IncomingMailHandler < ActionMailer::Base
         puts 'trying to parse!'
         # Attempt to parse the text-converted PDF
         ticket_parser = TicketParser.new(pdf_text)
-        ticket_parser.parse!
+        ticket_parser.parse_and_save!
         
         # If parsing failed, save the PDF and add it to the queue
         unless ticket_parser.parsed?
@@ -65,9 +65,8 @@ class IncomingMailHandler < ActionMailer::Base
         
         puts "we are good!!"
         
-        ticket_parser.create_from_parse!
         ticket = ticket_parser.created_ticket
-        
+        puts ticket.inspect
         # Place the PDF ticket in the right place and clean up temporary pdftotext output file
         `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
         ticket_count += 1 unless ticket.new_record?
