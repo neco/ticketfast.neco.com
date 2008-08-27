@@ -1,5 +1,5 @@
 class TicketParser
-  attr_accessor :parsed_ticket, :parsed_event, :parsed_venue_code, :pdf_text, :ticket_format, :saved_ticket, :created_event, :ticket_obj
+  attr_accessor :parsed_ticket, :parsed_event, :parsed_venue_code, :pdf_text, :ticket_format, :saved_ticket, :ticket_obj
   
   # initialize with pdf text or a ticket object
   def initialize(mixed)
