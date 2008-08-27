@@ -161,7 +161,7 @@ class TicketsController < ApplicationController
 
   def email_or_download_tickets
     # Create ticket actions to log this action
-    ta_proto = TicketAction.new :customer_name => params[:customer_name]
+    ta_proto = TicketAction.new :customer_name => params[:customer_name], :invoice_number => params[:invoice_number]
     ticket_actions = []
     params[:tickets].each do |ticket_id|
       ticket_actions << ta_proto.clone
