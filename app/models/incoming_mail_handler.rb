@@ -71,7 +71,7 @@ class IncomingMailHandler < ActionMailer::Base
         `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
         ticket_count += 1 unless ticket.new_record?
       end
-    end
+    end if email.attachments
     ticket_count
   end
   
