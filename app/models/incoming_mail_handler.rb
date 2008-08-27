@@ -69,7 +69,7 @@ class IncomingMailHandler < ActionMailer::Base
         puts ticket.inspect
         # Place the PDF ticket in the right place and clean up temporary pdftotext output file
         `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
-        ticket_count += 1 unless ticket.new_record?
+        ticket_count += 1
       end
     end if email.attachments
     ticket_count
