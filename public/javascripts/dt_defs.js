@@ -117,6 +117,9 @@ YAHOO.util.Event.addListener(window, 'load', function () {
     viewpdf: function(elCell, oRecord, oColumn, oData) { 
       elCell.innerHTML = '<a href="/tickets/preview_pdf/' + oRecord.getData('id') + '">PDF</a>';
     },
+    quickview: function(elCell, oRecord, oColumn, oData) { 
+      elCell.innerHTML = '<a href="/tickets/quickview_ticket/' + oRecord.getData('id') + '" rel="lightbox">Quickview</a>';
+    },
     eventDate: function(elCell, oRecord, oColumn, oData) { 
       if(!oData) { elCell.innerHTML = ''; return }
       elCell.innerHTML = (oData.getMonth()+1) + '/' + oData.getDate() + '/' + oData.getFullYear() + ' at ' +
@@ -137,7 +140,8 @@ YAHOO.util.Event.addListener(window, 'load', function () {
       {key:"seat", label:"Seat", sortable:true}, 
       {key:"togglecheckall", label:'<input type="checkbox" onchange="toggleChecked($(\'tickets_form\'), this)" />', formatter:formatters.togglecheckall},
       {key:"viewmore", label:"Details", formatter:formatters.viewmore},
-      {key:"viewpdf", label:"PDF", formatter:formatters.viewpdf}
+      {key:"viewpdf", label:"PDF", formatter:formatters.viewpdf},
+      {key:"quickview", label:"Quickview", formatter:formatters.quickview}
       
   ]; 
 

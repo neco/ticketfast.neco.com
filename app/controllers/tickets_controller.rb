@@ -197,6 +197,16 @@ minutes."
     send_file Ticket.find(params[:id]).pdf_filepath
   end
 
+  def quickview_ticket
+    @ticket = Ticket.find(params[:id])
+    unless File.exists?(@ticket.jpg_filepath)
+      `cd #{RAILS_ROOT} && pdf2dsc #{@ticket.pdf_rel_filepath} #{RAILS_ROOT}/tmp/#{@ticket.id}.dsc`
+      `convert #{RAILS_ROOT}/tmp/#{@ticket.id}.dsc #{@ticket.jpg_filepath}`
+      `rm #{RAILS_ROOT}/tmp/#{@ticket.id}.dsc`
+    end
+    send_file @ticket.jpg_filepath
+  end
+  
 private
   def create_composite_pdf ticket_ids
     ticket_ids.each do |id|

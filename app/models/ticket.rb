@@ -10,7 +10,15 @@ class Ticket < ActiveRecord::Base
   end
   
   def pdf_filepath
-    "#{RAILS_ROOT}/#{Setting['pdf_dir']}/#{id}.pdf"
+    "#{RAILS_ROOT}/#{pdf_rel_filepath}"
+  end
+  
+  def pdf_rel_filepath
+    "#{Setting['pdf_dir']}/#{id}.pdf"
+  end
+  
+  def jpg_filepath
+    "#{RAILS_ROOT}/#{Setting['pdf_dir']}/jpgs/#{id}.jpg"
   end
   
   def view!
