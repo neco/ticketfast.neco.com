@@ -103,6 +103,7 @@ class IncomingMailHandler < ActionMailer::Base
             imap.store(message_id, "+FLAGS", [:Flagged]) if num == 0
           rescue
             imap.store(message_id, "+FLAGS", [:Flagged])
+            raise
           end
         end
       end
