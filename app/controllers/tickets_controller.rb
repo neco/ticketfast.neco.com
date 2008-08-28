@@ -38,9 +38,14 @@ class TicketsController < ApplicationController
       find_include = [find_include, :ticket_actions]
     end
     
-    unless(params[:show_all]) 
+    unless(params[:show_all] or params[:viewed_only]) 
       find_conditions[0] += ' AND (viewed IS NULL OR viewed = ?)'    
       find_conditions << false
+    end
+    
+    if(params[:viewed_only]) 
+      find_conditions[0] += ' AND viewed = ?'    
+      find_conditions << true
     end
         
     @tickets = Ticket.find :all,
