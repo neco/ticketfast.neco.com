@@ -1,6 +1,10 @@
 class TicketsController < ApplicationController
   auto_complete_for :event, :name, :select => 'distinct name'
   
+  def index
+    @js_includes = ['dt_defs', 'tickets_dt_defs']
+  end
+  
   # Action called by the YUI datatable
   def list
     results =  params[:results] || 5
@@ -11,7 +15,7 @@ class TicketsController < ApplicationController
     
     find_include = {:event => :venue}
     
-    find_conditions = ['unparsed = ?', false]
+    find_conditions = ['unparsed = ?', params[:unparsed] ? true : false]
     params[:conditions].each do |field,val|
       find_conditions[0] += " AND #{field} LIKE ?"
       find_conditions << "#{val.strip}%"
@@ -76,9 +80,15 @@ class TicketsController < ApplicationController
     render :partial => 'ticket_data' if request.xhr?
   end
   
+  def edit
+    @ticket = Ticket.find params[:id]
+    render :partial => 'edit' if request.xhr?
+  end
+  
   def get_event_dates
     @events = Event.find_all_by_name(params[:event_name])
     @event_id = params[:event_id]
+    @custom = params[:custom_opt] # show 'custom' instead of 'view all'
     render :partial => 'event_dates' if request.xhr?
   end
   
@@ -114,7 +124,8 @@ class TicketsController < ApplicationController
   end
 
   def view_queue
-    @tickets = Ticket.unparsed.find(:all, :order => 'created_at desc', :limit => 50)
+    @js_includes = ['dt_defs', 'queue_dt_defs']
+    #@tickets = Ticket.unparsed.find(:all, :order => 'created_at desc', :limit => 50)
   end
   
   def view_text

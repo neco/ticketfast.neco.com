@@ -2,7 +2,8 @@ a { color: #222; }
 a:hover { color: #666; }
 
 #adv_search_div td { padding:3px; }
-
+#queue-form td { padding: 3px;}
+#queue-form td.label { padding-left:15px;}
 #ticket-details th {font-weight: bold; padding-right: 10px;width:140px;vertical-align:top;}
 #ticket-details td {width:300px;}
 #details-sub-div {padding:15px;}
@@ -10,6 +11,30 @@ a:hover { color: #666; }
 
 #email-or-download {margin:15px 0;}
 
+div.auto_complete {
+  width: 350px;
+  background: #fff;
+}
+div.auto_complete ul {
+  border:1px solid #888;
+  margin:0;
+  padding:0;
+  width:100%;
+  list-style-type:none;
+}
+div.auto_complete ul li {
+  margin:0;
+  padding:3px;
+}
+div.auto_complete ul li.selected {
+  background-color: #ffb;
+}
+div.auto_complete ul strong.highlight {
+  color: #800; 
+  margin:0;
+  padding:0;
+}
+        
 table.data-grid {
   width: 100%;
   border-left: 1px solid #aaa;

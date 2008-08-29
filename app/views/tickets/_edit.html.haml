@@ -1,0 +1,58 @@
+#queue-form
+  - form_for :ticket, @ticket, :url => 'update' do |f|
+    = f.hidden_field :id
+    %table
+      %tr
+        %td.label{:align => "right"} ID:
+        %td= @ticket.id
+        %td.label{:align => 'right'} PDF: 
+        %td= link_to('Download', :action => 'preview_pdf', :id => @ticket.id)
+      %tr
+        %td.label{:align => 'right'} Entered system on:
+        %td= @ticket.created_at.strftime("%m/%d/%y")
+        %td.label{:align => 'right'} Quickview: 
+        %td= link_to('View', {:action => 'quickview_ticket', :id => @ticket.id}, {:rel => 'lightbox'})
+      %tr
+        %td.label{:align => "right"} Section:
+        %td
+          %input{:type => 'text', :id => 'query-section', :value => h(params[:section]), :size => 5}/
+        %td.label{:align => 'right'} Purchaser:
+        %td
+          %input{:type => 'text', :id => 'query-order_number', :value => h(params[:order_number])}/
+      %tr
+        %td.label{:align => 'right'} Row:
+        %td
+          %input{:type => 'text', :id => 'query-row', :value => h(params[:row]), :size => 5}/
+        %td.label{:align => 'right'} Order #:
+        %td
+          %input{:type => 'text', :id => 'query-barcode_number', :value => h(params[:barcode_number])}/
+      %tr
+        %td.label{:align => 'right'} Seat:
+        %td
+          %input{:type => 'text', :id => 'query-seat', :value => h(params[:seat]), :size => 5}/
+        %td.label{:align => 'right'} Barcode #:
+        %td
+          %input{:type => 'text', :id => 'customer_name', :value => h(params[:customer_name])}/
+      %tr
+        %td
+        %td
+        %td.label{:align => 'right'} Event:
+        %td
+          %input{:type => 'text', :id => 'event_name', :name => 'event[name]', :onfocus => 'initEventAutoComplete()', :onblur => 'updateEventDates(true)'}
+          #event_name_auto_complete.auto_complete
+      %tr
+        %td
+        %td
+        %td.label{:align => 'right'} Event Date:
+        %td.yui-skin-sam
+          %select#event-date-select{:name => 'event_date', :onchange => 'updateEventDatePicker()'}
+            %option{:value => 0} -- Custom
+          %input{:type => 'text', :name => 'event_date_text', :id => 'event_date_text'}
+          #cal1Container{:style => 'margin-right:10px;margin-bottom:10px;border:1px solid black;display:none;position:absolute; z-index:1'}
+      %tr
+        %td
+          %input{:type => 'button', :value => 'Cancel', :onclick => "eventNameAutoCompleteLoaded=false;$('queue-form').hide()"}
+        %td
+        %td
+        %td
+          %input{:type => 'submit', :value => 'Save'}
