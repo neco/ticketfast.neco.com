@@ -41,7 +41,7 @@ class IncomingMailHandler < ActionMailer::Base
       `pdftk #{filepath} burst output #{tmp_dir}/page_%02d.pdf && rm doc_data.txt && rm #{filepath}`
       
       # Set up email attributes
-      email_attrs = {:email_subject => email.subject, :email_from => email.from.gsub(/^[- \n]+/,'').strip, :email_sent_at => email.date}
+      email_attrs = {:email_subject => email.subject, :email_from => email.from.first, :email_sent_at => email.date}
       
       # Loop through each PDF page, parse text, create Ticket, rename to {ticket.id}.pdf and place in pdfs directory
       Dir.glob("#{tmp_dir}/page_*pdf").each do |page_filepath|
