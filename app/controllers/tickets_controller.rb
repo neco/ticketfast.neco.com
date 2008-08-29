@@ -60,7 +60,7 @@ class TicketsController < ApplicationController
       :order => "#{order_by} #{dir}"
       
     ticket_json = @tickets.to_json(
-      :only => [:id, :event_id, :section, :row, :seat, :email_sent_at, :email_sender, :email_subject], :include => {
+      :only => [:id, :event_id, :section, :row, :seat, :email_sent_at, :email_from, :email_subject], :include => {
         :event => {:only => [:name, :venue_id, :occurs_at, :code], :include => {
           :venue => {:only => :name}
         } }

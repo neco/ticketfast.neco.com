@@ -9,7 +9,7 @@ YAHOO.util.Event.addListener(window, 'load', function () {
       fields: [
         "id",
         {key:"email_sent_at", parser: commonDT.parseDate},
-        "email_sender",
+        "email_from",
         "email_subject"
       ], 
       metaFields: { 
@@ -66,7 +66,7 @@ YAHOO.util.Event.addListener(window, 'load', function () {
   var colDefs = [ 
       {key:"id", label:"ID", sortable:true}, 
       {key:"email_sent_at", label:"Email Sent On", sortable:true, formatter:formatters.eventDate},
-      {key:"email_sender", label:"Email Sender", sortable:true}, 
+      {key:"email_from", label:"Email Sender", sortable:true}, 
       {key:"email_subject", label:"Email Subject", sortable:true}, 
       {key:"togglecheckall", label:'<input type="checkbox" onchange="toggleChecked($(\'tickets_form\'), this)" />', formatter:formatters.togglecheckall},
       {key:"viewmore", label:"Edit", formatter:formatters.openform},
