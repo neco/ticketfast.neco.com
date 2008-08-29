@@ -8,14 +8,9 @@ YAHOO.util.Event.addListener(window, 'load', function () {
       resultsList: "records", 
       fields: [
         "id",
-        "event_id",
-        "event.venue_id",
-        "event.name",
-        "event.venue.name",
-        {key:"event.occurs_at", parser: commonDT.parseDate},
-        "section",
-        "row",
-        "seat"
+        {key:"email_sent_at", parser: commonDT.parseDate},
+        "email_sender",
+        "email_subject"
       ], 
       metaFields: { 
           totalRecords: "totalRecords", 
@@ -70,12 +65,9 @@ YAHOO.util.Event.addListener(window, 'load', function () {
   // Column definitions 
   var colDefs = [ 
       {key:"id", label:"ID", sortable:true}, 
-      {key:"event.name", label:"Event", sortable:true}, 
-      {key:"event.venue.name", label:"Venue", sortable:true}, 
-      {key:"event.occurs_at", label:"Event Date", sortable:true, formatter:formatters.eventDate},
-      {key:"section", label:"Section", sortable:true}, 
-      {key:"row", label:"Row", sortable:true}, 
-      {key:"seat", label:"Seat", sortable:true}, 
+      {key:"email_sent_at", label:"Email Sent On", sortable:true, formatter:formatters.eventDate},
+      {key:"email_sender", label:"Email Sender", sortable:true}, 
+      {key:"email_subject", label:"Email Subject", sortable:true}, 
       {key:"togglecheckall", label:'<input type="checkbox" onchange="toggleChecked($(\'tickets_form\'), this)" />', formatter:formatters.togglecheckall},
       {key:"viewmore", label:"Edit", formatter:formatters.openform},
       {key:"viewpdf", label:"PDF", formatter:formatters.viewpdf},

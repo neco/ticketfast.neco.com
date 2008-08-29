@@ -69,7 +69,7 @@ class IncomingMailHandler < ActionMailer::Base
         puts "we are good!!"
         
         ticket = ticket_parser.saved_ticket
-        ticket.update_attributes!(email_attrs)
+        ticket.update_attributes(email_attrs)
         puts ticket.inspect
         # Place the PDF ticket in the right place and clean up temporary pdftotext output file
         `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
