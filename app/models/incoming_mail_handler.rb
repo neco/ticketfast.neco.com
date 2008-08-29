@@ -40,6 +40,9 @@ class IncomingMailHandler < ActionMailer::Base
       # Remove original pdf and a pdf doc descriptor that is created also
       `pdftk #{filepath} burst output #{tmp_dir}/page_%02d.pdf && rm doc_data.txt && rm #{filepath}`
       
+      # Set up email attributes
+      email_attrs = {:email_subject => email.subject, :email_from => email.from, :email_sent_at => email.date}
+      
       # Loop through each PDF page, parse text, create Ticket, rename to {ticket.id}.pdf and place in pdfs directory
       Dir.glob("#{tmp_dir}/page_*pdf").each do |page_filepath|
         puts 'doing a page'
@@ -54,7 +57,7 @@ class IncomingMailHandler < ActionMailer::Base
         # If parsing failed, save the PDF and add it to the queue
         unless ticket_parser.parsed?
           puts "no luck"
-          ticket = Ticket.create(:unparsed => true)
+          ticket = Ticket.create({:unparsed => true}.merge(email_attrs))
 
           # Place the PDF ticket in the right place and clean up temporary pdftotext output file
           `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
@@ -66,6 +69,7 @@ class IncomingMailHandler < ActionMailer::Base
         puts "we are good!!"
         
         ticket = ticket_parser.saved_ticket
+        ticket.update_attributes!(email_attrs)
         puts ticket.inspect
         # Place the PDF ticket in the right place and clean up temporary pdftotext output file
         `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
