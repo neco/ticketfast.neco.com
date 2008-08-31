@@ -20,7 +20,7 @@
       %td= @ticket.order_number 
     %tr
       %th Entered system on:
-      %td= @ticket.created_at.strftime("%m/%d/%y") 
+      %td= @ticket.created_at.strftime("%m/%d/%y")
   
     %tr
       %td{:colspan => 2}
@@ -32,6 +32,7 @@
           %br/
           .ticket-actions
             - @ticket.ticket_actions.each do |ta| customer = ta.customer_name? ? ta.customer_name : "(left blank)" 
+              = "Invoice ##{ta.invoice_number}: "
               = ta.recipient_email? ? "E-mailed to #{customer} &lt;#{ta.recipient_email}&gt;" : "Downloaded for  #{customer} on #{ta.created_at.strftime "%m/%d/%y at %l:%M %p"}"
               %br/
         - else

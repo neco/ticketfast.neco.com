@@ -1,0 +1,42 @@
+#ticket-form
+%div{:style => 'clear:both'}
+:javascript
+  var eventNameAutoCompleteLoaded, initEventAutoComplete, updateEventDatePicker, eventDateCal
+  var prepareForm = function() {
+    if(!$('event_date_text')){
+      setTimeout(prepareForm, 100)
+      return
+    }
+    eventNameAutoCompleteLoaded = false;
+    initEventAutoComplete = function () { 
+      if(!eventNameAutoCompleteLoaded)
+        var event_name_auto_completer = new Ajax.Autocompleter('event_name', 'event_name_auto_complete', '/tickets/auto_complete_for_event_name', {});
+      eventNameAutoCompleteLoaded=true;
+    };
+    updateEventDatePicker = function() {
+      if($F('event-date-select') == '0') {
+        $('event_date_text').show()
+      } else {
+        $('event_date_text').hide()
+      }
+    };
+  
+    var eventDateCal = new YAHOO.widget.Calendar("cal1","cal1Container", { mindate:"1/1/2006", 
+      maxdate:"12/31/2010", title:"Choose a date:", close:true });
+    
+    function handleSelect(type,args,obj) { 
+      var dates = args[0]; 
+      var date = dates[0]; 
+      var year = date[0], month = date[1], day = date[2]; 
+      document.getElementById("event_date_text").value = month + "/" + day + "/" + year; 
+      eventDateCal.hide()
+    }
+    YAHOO.util.Event.addListener("event_date_text", "click", eventDateCal.show, eventDateCal, true); 
+    	 
+    eventDateCal.selectEvent.subscribe(handleSelect, eventDateCal, true);
+    eventDateCal.render()
+  }
+.spacer
+.yui-skin-sam
+  #dt-container
+  #dt-paging

@@ -647,6 +647,9 @@ function cancelAssign() {
 <th>Row</th>
 <th>Seat</th>
 <th>View</th>
+<th>Text</th>
+<th>Parse</th>
+
 </tr>
 
 <% @tickets.each do |ticket| %>
@@ -716,6 +719,14 @@ new Ajax.InPlaceEditor( "ticket_seat_<%= ticket.id %>", '<%= url_for(edit_ticket
 </td>
 <td>
 <%= link_to "PDF", :controller => "tickets", :action => "preview_pdf", :id => ticket.id %>
+</td>
+
+<td>
+<%= link_to "Text", :controller => "tickets", :action => "view_text", :id => ticket.id %>
+</td>
+
+<td>
+<%= link_to "Parse", :controller => "tickets", :action => "parse", :id => ticket.id %>
 </td>
 </tr>
 <% end %>

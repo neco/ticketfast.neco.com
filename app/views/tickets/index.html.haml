@@ -9,7 +9,7 @@
       = text_field_with_auto_complete :event, :name
 
       Event date
-      %select#event-date-select{:name => 'event_date'}
+      %select#event-date-select{:name => 'event_date', :onchange => 'performSearch();'}
         %option{:value => 0} -- View all
   
       or
@@ -45,6 +45,12 @@
             %td{:align => 'right'} Show All
             %td
               %input{:type => 'checkbox', :id => 'show_all', :value => true}
+          %tr
+            %td{:align => 'right'}
+            %td
+            %td{:align => 'right'} Restrict to viewed
+            %td
+              %input{:type => 'checkbox', :id => 'viewed_only', :value => true}
       %br/
       %input{:type => 'submit', :value => 'Search'}/
 
@@ -56,8 +62,8 @@
   #ticket-details
 
   .yui-skin-sam
-    #ps_dt-container
-    #ps_dt-paging
+    #dt-container
+    #dt-paging
 
   
   #email-or-download
@@ -76,6 +82,10 @@
     Customer name
     %br/
     %input{:type => 'text', :name => 'customer_name'}/
+    .form-spacer
+    Invoice number
+    %br/
+    %input{:type => 'text', :name => 'invoice_number'}/
     %br/
     %br/
     %input#submit_tag{:type => 'submit', :value => 'Download Selected'}/

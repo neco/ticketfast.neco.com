@@ -39,6 +39,12 @@ def run_local cmd
 end
 
 namespace :dev do
+  desc 'Import DB and PDFs'
+  task :sync do
+    dev.import_production_db
+    dev.import_pdfs
+  end
+  
   desc 'Retrieve current production database and import locally.'
   task :import_production_db do 
     n = Time.now
@@ -61,7 +67,7 @@ namespace :dev do
     run_local "rake db:migrate"
   end
   
-  desc 'Copy photos from production server'
+  desc 'Copy pdfs from production server'
   task :import_pdfs do
     run_local "rsync -r #{user}@#{roles[:db].servers.first.host}:/var/www/ticketfast.neco.com/current/pdfs/* pdfs/"
   end

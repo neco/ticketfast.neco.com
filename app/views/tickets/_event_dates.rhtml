@@ -1,0 +1,4 @@
+$('event-date-select').update('<option value="0"><%= @custom ? '-- Custom' : '-- View all' %></option><%= 
+@events.collect{|e|datetime=e.occurs_at; 
+  "<option value=\"#{e.id}\"#{' selected="selected"' if e.id == @event_id.to_i}>#{e.occurs_at.strftime "%m/%d %I:%M %P"}</option>" if e.occurs_at
+}.join %>')

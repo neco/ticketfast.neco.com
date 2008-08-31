@@ -1,6 +1,10 @@
 class TicketsController < ApplicationController
   auto_complete_for :event, :name, :select => 'distinct name'
   
+  def index
+    @js_includes = ['dt_defs', 'tickets_dt_defs']
+  end
+  
   # Action called by the YUI datatable
   def list
     results =  params[:results] || 5
@@ -11,7 +15,7 @@ class TicketsController < ApplicationController
     
     find_include = {:event => :venue}
     
-    find_conditions = ['(event_id IS NOT NULL AND event_id != 0)']
+    find_conditions = ['unparsed = ?', params[:unparsed] ? true : false]
     params[:conditions].each do |field,val|
       find_conditions[0] += " AND #{field} LIKE ?"
       find_conditions << "#{val.strip}%"
@@ -27,15 +31,25 @@ class TicketsController < ApplicationController
       find_conditions << params[:event_code].strip
     end
     
+    if(params[:event_id] and !params[:event_id].blank?)
+      find_conditions[0] += ' AND events.id = ?'
+      find_conditions << params[:event_id].strip
+    end
+    
     if(params[:customer_name] and !params[:customer_name].blank?)
       find_conditions[0] += ' AND ticket_actions.customer_name = ?'
       find_conditions << params[:customer_name].strip
       find_include = [find_include, :ticket_actions]
     end
     
-    unless(params[:show_all]) 
+    unless(params[:show_all] or params[:viewed_only]) 
       find_conditions[0] += ' AND (viewed IS NULL OR viewed = ?)'    
       find_conditions << false
+    end
+    
+    if(params[:viewed_only]) 
+      find_conditions[0] += ' AND viewed = ?'    
+      find_conditions << true
     end
         
     @tickets = Ticket.find :all,
@@ -46,7 +60,7 @@ class TicketsController < ApplicationController
       :order => "#{order_by} #{dir}"
       
     ticket_json = @tickets.to_json(
-      :only => [:id, :event_id, :section, :row, :seat], :include => {
+      :only => [:id, :event_id, :section, :row, :seat, :email_sent_at, :email_from, :email_subject], :include => {
         :event => {:only => [:name, :venue_id, :occurs_at, :code], :include => {
           :venue => {:only => :name}
         } }
@@ -64,6 +78,18 @@ class TicketsController < ApplicationController
   def get_details
     @ticket = Ticket.find params[:id]
     render :partial => 'ticket_data' if request.xhr?
+  end
+  
+  def edit
+    @ticket = Ticket.find params[:id]
+    render :partial => 'edit' if request.xhr?
+  end
+  
+  def get_event_dates
+    @events = Event.find_all_by_name(params[:event_name])
+    @event_id = params[:event_id]
+    @custom = params[:custom_opt] # show 'custom' instead of 'view all'
+    render :partial => 'event_dates' if request.xhr?
   end
   
   
@@ -98,12 +124,46 @@ class TicketsController < ApplicationController
   end
 
   def view_queue
-    @tickets = Ticket.find :all, :conditions => 'event_id = 0 or event_id is null', :order => 'created_at desc', :limit => 50
+    @js_includes = ['dt_defs', 'queue_dt_defs']
+    #@tickets = Ticket.unparsed.find(:all, :order => 'created_at desc', :limit => 50)
+  end
+  
+  def view_text
+    @ticket = Ticket.find params[:id]
+    out_path = "#{RAILS_ROOT}/tmp/#{@ticket.id}_text}"
+    `pdftotext #{@ticket.pdf_filepath} #{out_path}`
+    pdf_text = File.read(out_path)
+    `rm -f #{out_path}`
+    send_data pdf_text, :filename => "ticket_#{@ticket.id}.txt"
+  end
+  
+  def parse
+    @ticket = Ticket.find params[:id]
+    ticket_parser = TicketParser.new(@ticket)
+    ticket_parser.parse!
+    out = '<pre>'
+    if(ticket_parser.parsed?) 
+      out += "Ticket format: #{ticket_parser.ticket_format}\n\n"
+      out += "Ticket: #{ticket_parser.parsed_ticket.inspect}\n\n"
+      out += "Event: #{ticket_parser.parsed_event.inspect}\n\n"
+      out += "Venue code: #{ticket_parser.parsed_venue_code.inspect}\n\n"
+      out += "Parse and save: <a href='/tickets/parse_and_save/#{@ticket.id}'>save</a>"
+    else
+      out += "Unable to parse"
+    end
+    out += '</pre>'
+    render :text => out
+  end
+  
+  def parse_and_save
+    @ticket = Ticket.find params[:id]
+    ticket_parser = TicketParser.new(@ticket).parse_and_save!
+    render :text => @ticket.attributes.inspect
   end
   
   def get_queue_date_partial
     @ticket = Ticket.find params[:ticket_id]
-    render :partial => 'get_queue_date' 
+    render :partial => 'get_queue_date'
   end
 
   def queue_set_event
@@ -128,7 +188,7 @@ class TicketsController < ApplicationController
 
   def email_or_download_tickets
     # Create ticket actions to log this action
-    ta_proto = TicketAction.new :customer_name => params[:customer_name]
+    ta_proto = TicketAction.new :customer_name => params[:customer_name], :invoice_number => params[:invoice_number]
     ticket_actions = []
     params[:tickets].each do |ticket_id|
       ticket_actions << ta_proto.clone
@@ -164,6 +224,16 @@ minutes."
     send_file Ticket.find(params[:id]).pdf_filepath
   end
 
+  def quickview_ticket
+    @ticket = Ticket.find(params[:id])
+    unless File.exists?(@ticket.jpg_filepath)
+      `cd #{RAILS_ROOT} && pdf2dsc #{@ticket.pdf_rel_filepath} #{RAILS_ROOT}/tmp/#{@ticket.id}.dsc`
+      `convert #{RAILS_ROOT}/tmp/#{@ticket.id}.dsc #{@ticket.jpg_filepath}`
+      `rm #{RAILS_ROOT}/tmp/#{@ticket.id}.dsc`
+    end
+    send_file @ticket.jpg_filepath
+  end
+  
 private
   def create_composite_pdf ticket_ids
     ticket_ids.each do |id|
