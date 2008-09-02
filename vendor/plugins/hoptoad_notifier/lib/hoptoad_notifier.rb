@@ -118,7 +118,7 @@ module HoptoadNotifier
     # Overrides the rescue_action method in ActionController::Base, but does not inhibit
     # any custom processing that is defined with Rails 2's exception helpers.
     def rescue_action_in_public_with_hoptoad exception
-      notify_hoptoad(exception) unless ignore?(exception)
+      notify_hoptoad(exception) unless ignore?(exception) || ignore_user_agent?
       rescue_action_in_public_without_hoptoad(exception)
     end 
         
@@ -151,6 +151,10 @@ module HoptoadNotifier
     def ignore?(exception) #:nodoc:
       ignore_these = HoptoadNotifier.ignore.flatten
       ignore_these.include?(exception.class) || ignore_these.include?(exception.class.name)
+    end
+    
+    def ignore_user_agent?
+      self.respond_to?(:request) && request.user_agent && request.user_agent =~ /(ScanAlert|slurp|Nessus|yacybot)/
     end
 
     def exception_to_data exception #:nodoc:
