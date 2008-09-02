@@ -12,6 +12,8 @@ Viewing <%= @events.size %> events<br />
 </th><th>
   Event Name
 </th><th>
+  Event Date
+</th><th>
   Venue Code
 </th><th>
   Venue Name
@@ -30,10 +32,14 @@ Viewing <%= @events.size %> events<br />
 <input type="text" class="text-field" name="event_names[<%= event.id %>]" />
 </td>
 <td>
+<input type="text" class="text-field" name="event_dates[<%= event.id %>]" value="<%= event.occurs_at.to_s(:db) %>" />
+</td>
+<td>
 <%= event.venue.code %>
 </td>
 <td>
-<% if event.venue.name and !event.venue.name.empty? %>
+<% if event.venue and event.venue.name and !event.venue.name.empty? %>
+<%= event.venue.inspect %>
 <%= event.venue.name %>
 <% else %>
 <input type="text" class="text-field" name="venue_names[<%= event.venue.id %>]" />

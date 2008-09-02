@@ -85,6 +85,23 @@ class TicketsController < ApplicationController
     render :partial => 'edit' if request.xhr?
   end
   
+  def update
+    @ticket = Ticket.find params[:ticket][:id]
+    @ticket.update_attributes!(params[:ticket])
+    if(params[:event_id] and params[:event_id] != '0')
+      @ticket.event = Event.find(params[:event_id])
+    elsif(params[:event][:name])
+      @ticket.event = Event.new(params[:event])
+      @ticket.event.occurs_at = Date.parse(params[:event_date_text])
+    end
+    if(@ticket.event)
+      @ticket.unparsed = false
+    end
+    @ticket.save
+    
+    render :text => ''
+  end
+  
   def get_event_dates
     @events = Event.find_all_by_name(params[:event_name])
     @event_id = params[:event_id]

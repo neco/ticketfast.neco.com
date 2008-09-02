@@ -1,5 +1,5 @@
 #queue-form
-  - form_for :ticket, @ticket, :url => 'update' do |f|
+  - remote_form_for :ticket, @ticket, :url => {:action => 'update'}, :complete => "eventNameAutoCompleteLoaded=false;$('queue-form').remove();reloadPS()" do |f|
     = f.hidden_field :id
     %table
       %tr
@@ -15,43 +15,44 @@
       %tr
         %td.label{:align => "right"} Section:
         %td
-          %input{:type => 'text', :id => 'query-section', :value => h(params[:section]), :size => 5}/
+          = f.text_field :section, :size => 5
         %td.label{:align => 'right'} Purchaser:
         %td
-          %input{:type => 'text', :id => 'query-order_number', :value => h(params[:order_number])}/
+          = f.text_field :purchaser
       %tr
         %td.label{:align => 'right'} Row:
         %td
-          %input{:type => 'text', :id => 'query-row', :value => h(params[:row]), :size => 5}/
+          = f.text_field :row, :size => 5
         %td.label{:align => 'right'} Order #:
         %td
-          %input{:type => 'text', :id => 'query-barcode_number', :value => h(params[:barcode_number])}/
+          = f.text_field :order_number
       %tr
         %td.label{:align => 'right'} Seat:
         %td
-          %input{:type => 'text', :id => 'query-seat', :value => h(params[:seat]), :size => 5}/
+          = f.text_field :seat, :size => 5
         %td.label{:align => 'right'} Barcode #:
         %td
-          %input{:type => 'text', :id => 'customer_name', :value => h(params[:customer_name])}/
+          = f.text_field :barcode_number
       %tr
         %td
         %td
         %td.label{:align => 'right'} Event:
         %td
-          %input{:type => 'text', :id => 'event_name', :name => 'event[name]', :onfocus => 'initEventAutoComplete()', :onblur => 'updateEventDates(true)'}
+          %input{:type => 'text', :id => 'event_name', :name => 'event[name]', :onfocus => 'initEventAutoComplete()', :onblur => 'updateEventDates(true)', :value => (@ticket.event ? @ticket.event.name : nil)}
           #event_name_auto_complete.auto_complete
       %tr
         %td
         %td
         %td.label{:align => 'right'} Event Date:
         %td.yui-skin-sam
-          %select#event-date-select{:name => 'event_date', :onchange => 'updateEventDatePicker()'}
+          %input{:type => 'hidden', :id => 'ticket_event_id', :value => (@ticket ? @ticket.event_id : nil)}
+          %select#event-date-select{:name => 'event_id', :onchange => 'updateEventDatePicker()'}
             %option{:value => 0} -- Custom
           %input{:type => 'text', :name => 'event_date_text', :id => 'event_date_text'}
           #cal1Container{:style => 'margin-right:10px;margin-bottom:10px;border:1px solid black;display:none;position:absolute; z-index:1'}
       %tr
         %td
-          %input{:type => 'button', :value => 'Cancel', :onclick => "eventNameAutoCompleteLoaded=false;$('queue-form').hide()"}
+          %input{:type => 'button', :value => 'Cancel', :onclick => "eventNameAutoCompleteLoaded=false;$('queue-form').remove()"}
         %td
         %td
         %td

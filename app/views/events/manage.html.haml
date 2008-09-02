@@ -1,0 +1,63 @@
+= form_tag({:action => "manage"}, :name => 'findevent') 
+Find an event to rename 
+= text_field_with_auto_complete :event, :name 
+= submit_tag 'Load' 
+= '</form>'
+
+- if @events.size > 0 
+  Viewing 
+  = @events.size
+  events
+  %br/
+  = form_tag({:action => "update_unnamed"}, :name => 'updateunnamed') 
+  %table.data-grid{:cellspacing => 0}
+    %tr
+      %th Preview
+      %th Event Code
+      %th Event Name
+      %th Event Date
+      %th Venue Code
+      %th Venue Name
+      %th Event Text from a Ticket
+    - @events.each do |event| 
+      %tr
+        %td= link_to "PDF", :controller => "tickets", :action => "preview_pdf", :id => event.tickets.first.id if event.tickets.size > 0
+        %td= event.code 
+        %td
+          %input.text-field{:id => "event_name_#{event.id}", :name => "event_names[#{event.id}]", :size => 30, :type => 'text', :value => h(event.name)}/
+          .auto_complete{:id => "event_name_#{event.id}_auto_complete"}
+          :javascript
+            var event_name_#{event.id}_auto_completer = new Ajax.Autocompleter('event_name_#{event.id}', 'event_name_#{event.id}_auto_complete', '/events/auto_complete_for_event_name', {})
+          
+        %td.yui-skin-sam
+          %input.text-field{:type => 'text', :style => 'width:150px', :name => "event_dates[#{event.id}]", :id => "event_date_text_#{event.id}", :value => (event.occurs_at.strftime("%m/%d/%Y %I:%M %p") if event.occurs_at)}
+          %div{:id => "cal-container-#{event.id}", :style => 'margin-right:10px;margin-bottom:10px;border:1px solid black;display:none;position:absolute;'}
+          :javascript
+            var eventDateCal#{event.id} = new YAHOO.widget.Calendar("cal-#{event.id}","cal-container-#{event.id}", { mindate:"1/1/2006", 
+              maxdate:"12/31/2010", title:"Choose a date:", close:true });
+
+            function handleSelect#{event.id}(type,args,obj) { 
+              var dates = args[0]; 
+              var date = dates[0]; 
+              var year = date[0], month = date[1], day = date[2]; 
+              document.getElementById("event_date_text_#{event.id}").value = month + "/" + day + "/" + year; 
+              eventDateCal#{event.id}.hide()
+              $("event_date_text_#{event.id}").focus()
+            }
+            YAHOO.util.Event.addListener("event_date_text_#{event.id}", "click", eventDateCal#{event.id}.show, eventDateCal#{event.id}, true); 
+
+            eventDateCal#{event.id}.selectEvent.subscribe(handleSelect#{event.id}, eventDateCal#{event.id}, true);
+            eventDateCal#{event.id}.render()
+        %td= event.venue.code if event.venue
+        %td
+          - if event.venue
+            - if event.venue.name and !event.venue.name.empty? 
+              = event.venue.name 
+            - else 
+              %input.text-field{:type => 'text', :name => "venue_names[#{event.id}]"}/
+        %td= event.tickets.first.event_text if event.tickets.size > 0 
+  %input{:type => 'submit', :value => 'Save'}/
+  = '</form>'  
+- else 
+  There are no events to display.
+

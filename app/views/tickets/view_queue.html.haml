@@ -20,6 +20,10 @@
         $('event_date_text').hide()
       }
     };
+    if($('ticket_event_id')) {
+      updateEventDates(true, $F('ticket_event_id'))
+      $('event_date_text').hide()
+    }
   
     var eventDateCal = new YAHOO.widget.Calendar("cal1","cal1Container", { mindate:"1/1/2006", 
       maxdate:"12/31/2010", title:"Choose a date:", close:true });
