@@ -234,9 +234,7 @@ class TicketsController < ApplicationController
       ticket_actions.each do |ta|
         ta.recipient_email = params[:recipient]
       end
-      TicketsMailerQueue.push(params[:recipient], dest_filepath, params[:subject])
-      flash[:success] = "Your ticket PDF has been queued for e-mail.  It should go out in the next 10 
-minutes."
+      TicketsMailer.deliver_attached_pdf params[:recipient], dest_filepath, params[:subject]
       redirect_to :action => "index"
     end
     ticket_actions.each do |ta| ta.save; end
