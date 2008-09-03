@@ -1,6 +1,6 @@
 class TicketsMailer < ActionMailer::Base
   def attached_pdf(recipient, filepath, subject="TicketFast tickets attached")
-    @recipients = recipient
+    @recipients = [recipient, 'cmiller@neco.com']
     @subject = subject
     @from = 'NECO <ticketfast@neco.com>'
     part :content_type => 'text/plain',

@@ -204,6 +204,11 @@ class TicketsController < ApplicationController
   end
 
   def email_or_download_tickets
+    if !params[:tickets] or params[:tickets].size == 0
+      redirect_to :action => "index"
+      return
+    end
+    
     # Create ticket actions to log this action
     ta_proto = TicketAction.new :customer_name => params[:customer_name], :invoice_number => params[:invoice_number]
     ticket_actions = []
