@@ -25,6 +25,8 @@ class EventsController < ApplicationController
   def manage
     if params[:event] and params[:event][:name] and !params[:event][:name].empty?
       @events = Event.find(:all, :conditions => ['name like ?', params[:event][:name]])
+    elsif params[:no_dates]
+      @events = Event.without_dates
     else
       @events = Event.find_unnamed
     end

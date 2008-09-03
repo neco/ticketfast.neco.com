@@ -3,6 +3,10 @@ Find an event to rename
 = text_field_with_auto_complete :event, :name 
 = submit_tag 'Load' 
 = '</form>'
+.spacer
+or: 
+= link_to 'Show all events without dates', :no_dates => true
+.spacer
 
 - if @events.size > 0 
   Viewing 
@@ -12,7 +16,8 @@ Find an event to rename
   = form_tag({:action => "update_unnamed"}, :name => 'updateunnamed') 
   %table.data-grid{:cellspacing => 0}
     %tr
-      %th Preview
+      %th PDF
+      %th Quickview
       %th Event Code
       %th Event Name
       %th Event Date
@@ -22,6 +27,8 @@ Find an event to rename
     - @events.each do |event| 
       %tr
         %td= link_to "PDF", :controller => "tickets", :action => "preview_pdf", :id => event.tickets.first.id if event.tickets.size > 0
+        %td
+          = link_to('Quickview', {:controller => 'tickets', :action => 'quickview_ticket', :id => event.tickets.first.id}, {:rel => 'lightbox'}) if event.tickets.size > 0
         %td= event.code 
         %td
           %input.text-field{:id => "event_name_#{event.id}", :name => "event_names[#{event.id}]", :size => 30, :type => 'text', :value => h(event.name)}/

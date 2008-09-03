@@ -3,6 +3,7 @@ class Event < ActiveRecord::Base
   belongs_to :venue
   validates_uniqueness_of :code, :allow_nil => true
   named_scope :unnamed, :conditions => "name = '' OR name IS NULL"
+  named_scope :without_dates, :conditions => 'occurs_at is null'
   
   def set_venue! venue_code
     self.venue = nil
