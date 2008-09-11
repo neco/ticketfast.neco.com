@@ -10,4 +10,4 @@ public/cache/*
 .svn
 *.swp
 *.save
-pdfs/
+pdfs

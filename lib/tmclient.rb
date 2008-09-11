@@ -1,14 +1,25 @@
 require 'rubygems'
 require 'hpricot'
 require 'cgi'
+require 'timeout'
 
-class TMClient  
-  attr_accessor :form_data, :doc, :src, :order_data, :pages_fetched
+class TMClient
+  attr_accessor :form_data, :doc, :src, :order_data, :pages_fetched, :cookies, :logger
   
-  def initialize(username='dgainor99@gmail.com', password='060381')
+  def initialize(username='dgainor99@gmail.com', password='060381', logger=nil)
     @username, @password = username, password
+    self.logger = logger
     self.pages_fetched = 0
     self.order_data = []
+  end
+  
+  def debug msg
+    out = "[TMCLIENT #{@username} #{Time.now.strftime("%H:%M:%S")}] #{msg}"
+    if logger
+      logger.debug(out)
+    else
+      puts(out)
+    end
   end
   
   def logged_in?
@@ -18,31 +29,30 @@ class TMClient
   def save_ticket(dest_path)
     begin
       fetch_ticket(order_data.first)
-      puts "* Received ticket, saving as #{dest_path}"
+      debug "* Received ticket, saving as #{dest_path}"
       File.open(dest_path, 'w') { |f| f.write src }
       order_data.shift
     rescue
-      puts "* Ticket is unavailable"
+      debug "* Ticket is unavailable"
     end
   end
   
   def get_order_history
     unless logged_in?
-      puts "* Requesting login page"
-      goto_login_page
-      pretend_to_be_human
-    
-      puts "* Sending login request"
       begin
+        debug "* Requesting login page"
+        goto_login_page
+    
+        debug "* Sending login request"
         log_in
       rescue
+        debug "* Could not get logged in!"
         raise
       end
-      puts "* Login successful"
-      pretend_to_be_human
+      debug "* Login successful"
     end
     
-    puts "* Fetching and parsing a page of order history"
+    debug "* Fetching and parsing a page of order history"
     fetch_order_history_page
   end
 
@@ -73,7 +83,7 @@ class TMClient
   end
   
   def fetch_ticket(order_hash)
-    puts "* Requesting order information page"
+    debug "* Requesting order information page"
     self.src = fetch_request(order_hash[:get_tickets_uri])
     self.doc = Hpricot(src)
     
@@ -85,21 +95,20 @@ class TMClient
     end
     
     uri = 'https://www.ticketmaster.com' + doc.at("//div[@class='button']")['onclick'].gsub(/^.*?\('(.*)'\)$/, '\1')
-    
-    pretend_to_be_human
-    
-    puts "* Found order, loading tickets download window"
+        
+    debug "* Found order, loading tickets download window"
     self.src = fetch_request(uri)
     self.doc = Hpricot(src)
     
     refresh_loop
     
-    puts "* Tickets fetched"
+    debug "* Tickets fetched"
   end
   
   def goto_login_page
     self.src = fetch_request('https://www.ticketmaster.com/member', :send_cookies => false)
     self.doc = Hpricot(src)
+    raise "Site appears to be down?" unless doc.at("//input[@name='v']")
     self.form_data = {'v'             =>    doc.at("//input[@name='v']")['value'],
                       'email_address' =>    CGI::escape(@username),
                       'password'      =>    CGI::escape(@password) }
@@ -118,33 +127,51 @@ class TMClient
     }
     options = default_options.merge(options)
     
+    options[:cookies] = cookies if options[:send_cookies]
     
-    options[:post_data] = options[:post_data].collect{|k,v| "#{k}=#{v}"}.join('&') if options[:post_data]
+    job_key = @username + rand(10000000).to_s
     
-    `curl -s #{"--data '#{options[:post_data]}' " if options[:post_data]} --insecure '#{uri}' -c mycookies #{'-b mycookies' if options[:send_cookies]}`
+    count = 0
+    loop do
+      count += 1
+      debug "Sending fetch_request call to job_queue_worker DONE THIS: #{count}"
+      sleep(rand)
+      MiddleMan.worker(:job_queue_worker).async_fetch_request(:arg => {:client_key => job_key, :uri => uri, :options => options})
+    
+      10.times do
+        sleep(3)
+        resp = nil
+        begin
+          Timeout.timeout(2) {
+            resp = MiddleMan.worker(:job_queue_worker).fetch_response(:arg => {:client_key => job_key})
+          }
+        rescue Exception => e
+          debug "Timed out!"
+          debug e.inspect
+        end
+        
+        if resp
+          debug "*** got a response"
+          if resp[:src] =~ /An error occurred while processing your request./
+            debug "! sending request again got error processing request from TM"
+            break
+          end
+          self.cookies = resp[:cookies]
+          return resp[:src] 
+        end
+      end
+    end
   end
   
   def refresh_loop
     loop do
       http_refresh_el = doc.at("//meta[@http-equiv='refresh']")
       return if http_refresh_el.nil?
-      puts "** In a refresh loop, waiting 4 seconds until trying again"
+      debug "** In a refresh loop, waiting 4 seconds until trying again"
       uri = 'https://www.ticketmaster.com' + http_refresh_el['content'].gsub(/^.*?url=/,'')
       sleep(4)
       self.src = fetch_request(uri)
       self.doc = Hpricot(src)
     end
-  end
-  
-  def pretend_to_be_human
-    puts
-    puts "# kicking back, pretending i'm a human"
-    print "3... "
-    sleep(1)
-    print "2... "
-    sleep(1)
-    puts "1... "
-    puts
-    sleep(1)
   end
 end
