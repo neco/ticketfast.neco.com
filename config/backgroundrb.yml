@@ -1,5 +1,6 @@
 --- 
-:backgroundrb: 
+:backgroundrb:
+  :worker_dir: lib/workers
   :ip: 0.0.0.0
   :port: 11006
-  :environment: production 
+  :environment: production

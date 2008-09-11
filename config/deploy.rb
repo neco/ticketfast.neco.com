@@ -17,6 +17,7 @@ set :use_sudo, false
 
 role :app, "server2.neco.com"
 role :web, "server2.neco.com"
+role :bdrb, "server2.neco.com"
 role :db,  "server2.neco.com", :primary => true
 
 task :after_update_code do
