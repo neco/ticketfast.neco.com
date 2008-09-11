@@ -4,7 +4,7 @@ require "base64"
 
 class DumbSlave
   def initialize
-    @base_uri = 'http://128.223.31.226/'
+    @base_uri = 'http://ticketfast.neco.com/'
   end
   
   def get_job
@@ -57,6 +57,6 @@ class DumbSlave
       File.open('postdata', 'w') {|f| f.write options[:post_data]}
     end
     
-    `curl -s #{%[--data "@postdata" ] if options[:post_data]} --insecure "#{uri}" -c - #{'-b cookies' if options[:send_cookies]}`
+    `curl -s #{%[--data "@postdata" ] if options[:post_data]} --insecure "#{uri}" -c - #{'-b cookies' if options[:send_cookies]} -u "neco:fast tickets"`
   end
 end

@@ -28,6 +28,11 @@ task :after_update_code do
   deploy.cleanup
 end
 
+task :after_deploy do
+  deploy.bdrb.restart
+end
+
+
 set :mysql_username, 'tf_user'
 set :mysql_password, 'fv38vdl2'
 set :mysql_production_db, 'ticketfast_production'
@@ -81,6 +86,24 @@ namespace :deploy do
         #invoke_command checks the use_sudo variable to determine how to run the thin command
         invoke_command "thin #{t.to_s} -C #{thin_conf}", :via => run_method
       end
+    end
+  end
+  
+  namespace :bdrb do
+    desc 'Start BackgrounDRb'
+    task :start, :roles => :bdrb do
+      run "cd #{current_path} && #{sudo} nohup script/backgroundrb start"
+    end
+    
+    desc 'Stop BackgrounDRb'
+    task :stop, :roles => :bdrb do
+      run "cd #{current_path} && #{sudo} script/backgroundrb stop"
+    end
+    
+    desc 'Restart BackgroundRB'
+    task :restart, :roles => :bdrb do
+      deploy.bdrb.stop
+      deploy.bdrb.start
     end
   end
 
