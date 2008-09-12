@@ -64,6 +64,9 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
               logger.debug "Working on saving a ticket"
       
               filepath = "#{tmp_dir}/tmclient_#{unique_id}_pdf.pdf"
+              
+              order = client.order_data.first
+              
               client.save_ticket(filepath)
               
               logger.debug "Ticket saved, decrypting"
@@ -105,13 +108,14 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
 
                 ticket ||= ticket_parser.saved_ticket
                 
-                old_ticket = Ticket.find(:first, :conditions => {:order_number => ticket.order_number, :unfetched => true})
+                old_ticket = Ticket.find(:first, :conditions => {:order_number => order[:order_number], :unfetched => true}).destroy
                 
                 ticket.tm_account_id = tm_account_id
-                ticket.tm_order_date = old_ticket.tm_order_date
-                ticket.tm_event_name = old_ticket.tm_event_name
-                ticket.tm_venue_name = old_ticket.tm_venue_name
-                ticket.tm_event_date = old_ticket.tm_event_date
+                ticket.order_number = order[:order_number]
+                ticket.tm_order_date = order[:order_date]
+                ticket.tm_event_name = order[:event_name]
+                ticket.tm_venue_name = order[:venue_name]
+                ticket.tm_event_date = order[:event_date]
                 ticket.save
                 logger.debug ticket.inspect
                 old_ticket.destroy

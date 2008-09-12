@@ -4,8 +4,8 @@ require "base64"
 
 class DumbSlave
   def initialize
-    #@base_uri = 'http://ticketfast.neco.com/'
-    @base_uri = 'http://localhost:3000/'
+    @base_uri = 'http://ticketfast.neco.com/'
+    #@base_uri = 'http://localhost:3000/'
   end
   
   def get_job
@@ -45,8 +45,8 @@ class DumbSlave
   
   def do_fetch_request_job(job)
     src = fetch_request(job[:uri], job[:options])
-    src =~ /(# Netscape HTTP Cookie File.*)$/m
-    results_str = Base64.encode64(Marshal.dump({:src => src, :cookies => $1}))
+    cookies = File.read('mycookies')
+    results_str = Base64.encode64(Marshal.dump({:src => src, :cookies => cookies}))
     fetch_request("#{@base_uri}ticket_request_server/submit_work", :send_cookies => false, :post_data => {'results' => CGI::escape(results_str), 'client_key' => CGI::escape(job[:client_key])})
   end
   
@@ -58,7 +58,7 @@ class DumbSlave
       File.open('postdata', 'w') {|f| f.write options[:post_data]}
     end
     
-    `curl -s #{%[--data "@postdata" ] if options[:post_data]} --insecure "#{uri}" -c - #{'-b cookies' if options[:send_cookies]} ` #-u "neco:fast tickets"`
+    `curl -s #{%[--data "@postdata" ] if options[:post_data]} --insecure "#{uri}" -c mycookies #{'-b cookies' if options[:send_cookies]} -u "neco:fast tickets"`
   end
 end
 
