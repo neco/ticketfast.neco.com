@@ -58,7 +58,8 @@ class DumbSlave
       File.open('postdata', 'w') {|f| f.write options[:post_data]}
     end
     
-    `curl -s #{%[--data "@postdata" ] if options[:post_data]} --insecure "#{uri}" -c mycookies #{'-b cookies' if options[:send_cookies]} -u "neco:fast tickets"`
+    `curl -s #{%[--data "@postdata" ] if options[:post_data]} --insecure "#{uri}" -c mycookies #{'-b cookies' if options[:send_cookies]} -u "neco:hurricane123" -o src_out`
+    File.read('src_out')
   end
 end
 

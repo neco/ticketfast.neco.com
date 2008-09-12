@@ -67,7 +67,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
               
               order = client.order_data.first
               
-              client.save_ticket(filepath)
+              next if client.save_ticket(filepath)
               
               logger.debug "Ticket saved, decrypting"
               

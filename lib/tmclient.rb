@@ -31,8 +31,10 @@ class TMClient
       fetch_ticket(order_data.first)
       debug "* Received ticket, saving as #{dest_path}"
       File.open(dest_path, 'w') { |f| f.write src }
+      return true
     rescue
       debug "* Ticket is unavailable"
+      return false
     end
     order_data.shift
   end
