@@ -79,7 +79,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
             begin
               logger.debug "Working on saving a ticket"
       
-              filepath = "#{tmp_dir}/tmclient#_#{unique_id}_pdf.pdf"
+              filepath = "#{tmp_dir}/tmclient_#{unique_id}_pdf.pdf"
               client.save_ticket(filepath)
 
               # Remove owner restrictions and decrypt the PDF
