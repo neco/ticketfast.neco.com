@@ -2,8 +2,11 @@ class Ticket < ActiveRecord::Base
   validates_uniqueness_of :barcode_number, :allow_nil => true
   belongs_to :event
   has_many :ticket_actions, :order => "created_at DESC"
+  belongs_to :tm_account
   
   named_scope :unparsed, :conditions => {:unparsed => true}
+  named_scope :unfetched, :conditions => {:unfetched => true}
+  named_scope :fetched, :conditions => {:unfetched => false}
   
   def before_destroy
     `rm #{RAILS_ROOT}/#{Setting['pdf_dir']}/#{id}.pdf`

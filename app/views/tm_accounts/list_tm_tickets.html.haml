@@ -1,0 +1,27 @@
+= link_to "back to Ticketmaster Accounts", :action => 'index'
+.spacer
+.spacer
+== Showing #{@tickets.size} #{@unfetched ? 'unfetched' : 'fetched'} tickets for #{@tm_account.username}
+.spacer
+%table.data-grid{:cellspacing => 0}
+  %tr
+    %th Order number
+    %th Order date
+    %th Event name
+    %th Venue name
+    %th Event date
+    %th First seen
+    - unless @unfetched
+      %th PDF
+      %th Quickview
+  - @tickets.each do |ticket|
+    %tr
+      %td&= ticket.order_number
+      %td= ticket.tm_order_date.strftime("%m/%d/%y")
+      %td&= ticket.tm_event_name
+      %td&= ticket.tm_venue_name
+      %td= ticket.tm_event_date.strftime("%m/%d/%y")
+      %td= ticket.created_at.strftime("%m/%d/%y at %I:%M %p")
+      - unless @unfetched
+        %td= link_to "PDF", :controller => "tickets", :action => "preview_pdf", :id => ticket.id
+        %td= link_to('Quickview', {:controller => 'tickets', :action => 'quickview_ticket', :id => ticket.id}, {:rel => 'lightbox'})

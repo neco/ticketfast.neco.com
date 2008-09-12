@@ -4,11 +4,11 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
   
   def create(args = nil)
     logger.debug 'setting up request worker'
-    @accounts = [
-      {:username => 'dgainor99@gmail.com', :password => '060381'},
-      {:username => 'sgainor99@gmail.com', :password => '060381'},
-      {:username => 'bedrock95@yahoo.com', :password => 'mazzylama74'}
-    ]
+    @accounts = TmAccount.find(:all)
+     # {:username => 'dgainor99@gmail.com', :password => '060381'},
+    #  {:username => 'sgainor99@gmail.com', :password => '060381'},
+    #  {:username => 'bedrock95@yahoo.com', :password => 'mazzylama74'}
+    
     logger.debug 'cool!'
   end
   
@@ -28,18 +28,18 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
   def save_unseen_tickets
     @clients = {}
     @accounts.each do |acct|
-      @clients[acct[:username]] = TMClient.new(acct[:username], acct[:password], logger)
+      @clients[acct] = TMClient.new(acct.username, acct.password, logger)
     end
     threads = []
-    @clients.each do |tmusername, tmclient|
-      threads << Thread.new(tmusername, tmclient) do |username, client| 
+    @clients.each do |tmacct, tmclient|
+      threads << Thread.new(tmacct.id, tmclient) do |tm_account_id, client| 
         begin
           unique_id = rand(10000)
       
           # do not grab tickets purchased before 9/1/08
           cutoff_date = Date.new(2008,9,1)
     
-          logger.debug "working with #{username}, #{client.inspect}"
+          logger.debug "working with #{tm_account_id}, #{client.inspect}"
           logger.debug "client order data #{client.order_data.inspect}"
     
           # This loop grabs a page of order history, and gets rid of tickets we have already received
@@ -62,7 +62,13 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           end
     
           client.order_data.each do |order|
-            Ticket.create :order_number => order[:order_number], :unfetched => true, :tm_account => username
+            Ticket.create :order_number => order[:order_number], 
+                          :unfetched => true, 
+                          :tm_account_id => tm_account_id, 
+                          :tm_order_date => Date.parse(order[:order_date]), 
+                          :tm_event_name => order[:event_name],
+                          :tm_venue_name => order[:venue_name],
+                          :tm_event_date => Date.parse(order[:event_date])
           end
 
           # factor this out where possible
@@ -108,11 +114,17 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
                 end
 
                 ticket = ticket_parser.saved_ticket
-                ticket.tm_account = username
+                
+                old_ticket = Ticket.find(:first, :conditions => {:order_number => ticket.order_number, :unfetched => true})
+                
+                ticket.tm_account_id = tm_account_id
+                ticket.tm_order_date = old_ticket.tm_order_date
+                ticket.tm_event_name = old_ticket.tm_event_name
+                ticket.tm_venue_name = old_ticket.tm_venue_name
+                ticket.tm_event_date = old_ticket.tm_event_date
                 ticket.save
                 logger.debug ticket.inspect
-        
-                Ticket.find(:first, :conditions => {:order_number => ticket.order_number, :unfetched => true}).destroy
+                old_ticket.destroy
         
                 # Place the PDF ticket in the right place and clean up temporary pdftotext output file
                 `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`

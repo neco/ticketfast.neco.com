@@ -23,6 +23,8 @@
         = link_to "Tickets Queue", :controller => "tickets", :action => "view_queue" 
         = "(#{Ticket.unparsed.count})"
         \-
+        = link_to "Ticketmaster Accounts", :controller => "tm_accounts", :action => "index" 
+        \-
         Total tickets: 
         = Ticket.count
         %br/
