@@ -4,27 +4,11 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
   
   def create(args = nil)
     logger.debug 'setting up request worker'
-    @accounts = TmAccount.find(:all)
-     # {:username => 'dgainor99@gmail.com', :password => '060381'},
-    #  {:username => 'sgainor99@gmail.com', :password => '060381'},
-    #  {:username => 'bedrock95@yahoo.com', :password => 'mazzylama74'}
+    @accounts = TmAccount.enabled
     
     logger.debug 'cool!'
   end
-  
-  def simple_test
-    t1 = Thread.new {
-      client1 = TMClient.new('dgainor99@gmail.com', '060381', logger)
-      client1.get_order_history
-    }
-    t2 = Thread.new {
-      client2 = TMClient.new('sgainor99@gmail.com', '060381', logger)
-      client2.get_order_history
-    }
-    t1.join
-    t2.join
-  end
-  
+
   def save_unseen_tickets
     @clients = {}
     @accounts.each do |acct|

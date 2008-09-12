@@ -13,6 +13,13 @@ class TmAccountsController < ApplicationController
     redirect_to :action => 'index'
   end
   
+  def toggle_disabled
+    @tm_account = TmAccount.find(params[:id])
+    @tm_account.disabled = @tm_account.disabled? ? false : true
+    @tm_account.save
+    redirect_to :action => 'index'
+  end
+  
   def list_unfetched
     @tm_account = TmAccount.find(params[:id])
     @tickets = @tm_account.tickets.unfetched
