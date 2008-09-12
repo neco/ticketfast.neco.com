@@ -93,7 +93,7 @@ namespace :deploy do
   namespace :bdrb do
     desc 'Start BackgrounDRb'
     task :start, :roles => :bdrb do
-      run "cd #{current_path} && #{sudo} nohup script/backgroundrb start"
+      run "cd #{current_path} && #{sudo} nohup script/backgroundrb start RAILS_ENV=production"
     end
     
     desc 'Stop BackgrounDRb'

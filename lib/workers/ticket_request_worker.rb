@@ -132,7 +132,9 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
             end
           end
           logger.debug "All done!"
-        rescue;end
+        rescue Exception => e
+          logger.debug "EXCEPTION! #{e.inspect}"
+        end
       end
     end
  
