@@ -81,39 +81,45 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
       
               filepath = "#{tmp_dir}/tmclient_#{unique_id}_pdf.pdf"
               client.save_ticket(filepath)
-
+              
+              logger.debug "Ticket saved, decrypting"
+              
               # Remove owner restrictions and decrypt the PDF
               `#{RAILS_ROOT}/bin/guapdf -y #{filepath}`
               if File.exists?( filepath.gsub(/\.pdf$/, '.decrypted.pdf') )
                 `rm #{filepath}`
                 filepath = filepath.gsub(/\.pdf$/, '.decrypted.pdf') 
               end
+              
+              logger.debug "Decrypted, bursting pages"
 
               # Split PDF into pages, filenames are page_01.pdf, page_02.pdf, etc 
               # Remove original pdf and a pdf doc descriptor that is created also
               `pdftk #{filepath} burst output #{tmp_dir}/page_#{unique_id}_%02d.pdf && rm doc_data.txt && rm #{filepath}`
-
+              
+              logger.debug "Burst! going through pages"
               # Loop through each PDF page, parse text, create Ticket, rename to {ticket.id}.pdf and place in pdfs directory
               Dir.glob("#{tmp_dir}/page_#{unique_id}_*pdf").each do |page_filepath|
+                logger.debug "In a page, converting to text"
                 `pdftotext #{page_filepath}`
                 text_filepath = page_filepath.gsub /pdf$/, 'txt'
                 pdf_text = File.read(text_filepath)
 
+                logger.debug "Converted, running the ticket parser"
+                
                 # Attempt to parse the text-converted PDF
                 ticket_parser = TicketParser.new(pdf_text)
                 ticket_parser.parse_and_save!
-
+                
+                ticket = nil
                 # If parsing failed, save the PDF and add it to the queue
                 unless ticket_parser.parsed?
                   ticket = Ticket.create({:unparsed => true})
                   logger.debug 'Could not parse ticket, saving unparsed'
                   # Place the PDF ticket in the right place and clean up temporary pdftotext output file
-                  `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
-
-                  next
                 end
 
-                ticket = ticket_parser.saved_ticket
+                ticket ||= ticket_parser.saved_ticket
                 
                 old_ticket = Ticket.find(:first, :conditions => {:order_number => ticket.order_number, :unfetched => true})
                 
@@ -129,6 +135,8 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
                 # Place the PDF ticket in the right place and clean up temporary pdftotext output file
                 `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
               end
+            rescue Exception => e
+              logger.debug "IN LOOP EXCEPTION! #{e.inspect}"
             end
           end
           logger.debug "All done!"
