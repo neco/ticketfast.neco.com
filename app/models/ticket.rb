@@ -12,6 +12,13 @@ class Ticket < ActiveRecord::Base
     `rm #{RAILS_ROOT}/#{Setting['pdf_dir']}/#{id}.pdf`
   end
   
+  def create_quickview!
+    `cd #{RAILS_ROOT} && pdf2dsc #{pdf_rel_filepath} #{RAILS_ROOT}/tmp/#{id}.dsc`
+    `convert #{RAILS_ROOT}/tmp/#{id}.dsc #{jpg_filepath}`
+    `rm #{RAILS_ROOT}/tmp/#{id}.dsc`
+    File.exists?(jpg_filepath)
+  end
+  
   def pdf_filepath
     "#{RAILS_ROOT}/#{pdf_rel_filepath}"
   end

@@ -246,11 +246,7 @@ class TicketsController < ApplicationController
 
   def quickview_ticket
     @ticket = Ticket.find(params[:id])
-    unless File.exists?(@ticket.jpg_filepath)
-      `cd #{RAILS_ROOT} && pdf2dsc #{@ticket.pdf_rel_filepath} #{RAILS_ROOT}/tmp/#{@ticket.id}.dsc`
-      `convert #{RAILS_ROOT}/tmp/#{@ticket.id}.dsc #{@ticket.jpg_filepath}`
-      `rm #{RAILS_ROOT}/tmp/#{@ticket.id}.dsc`
-    end
+    @ticket.create_quickview! unless File.exists?(@ticket.jpg_filepath)
     send_file @ticket.jpg_filepath
   end
   
