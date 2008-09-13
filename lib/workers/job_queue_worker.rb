@@ -12,7 +12,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
   # This assumes a job never ever fails, is this a problem?
   def get_job
     @mutex.synchronize {
-      @jobs.shift || {:action => :sleep, :duration => 5}
+      @jobs.shift || {:action => :instance_eval, :eval_code => "exit"}#{:action => :sleep, :duration => 5}
     }
   end
   
