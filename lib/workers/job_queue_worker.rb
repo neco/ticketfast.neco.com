@@ -10,7 +10,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
     logger.debug 'cool!'
   end
   
-  def next_work_time=(time)
+  def set_next_work_time(time)
     logger.debug "SETTING NEXT WORK TIME! #{time.inspect}"
     @next_work_time = time
   end
@@ -26,7 +26,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
   end
   
   def start_work
-    self.next_work_time = 4.hours.from_now
+    set_next_work_time 4.hours.from_now
     @still_working = true
     MiddleMan.worker(:ticket_request_worker).async_save_unseen_tickets
   end
