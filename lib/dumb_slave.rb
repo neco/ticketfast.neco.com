@@ -5,7 +5,6 @@ require "base64"
 class DumbSlave
   def initialize
     @base_uri = 'http://ticketfast.neco.com/'
-    #@base_uri = 'http://localhost:3000/'
   end
   
   def get_job
@@ -69,9 +68,5 @@ class DumbSlave
   end
 end
 
-if ARGV[0] == 'start'
-  slave = DumbSlave.new
-  slave.work
-else
-  puts "Usage: dumb_slave start"
-end
+slave = DumbSlave.new
+slave.work

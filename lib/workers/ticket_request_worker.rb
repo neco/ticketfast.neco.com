@@ -3,10 +3,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
   set_worker_name :ticket_request_worker
   
   def create(args = nil)
-    logger.debug 'setting up request worker'
     @accounts = TmAccount.enabled
-    
-    logger.debug 'cool!'
   end
 
   def save_unseen_tickets
@@ -38,7 +35,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
             client.get_order_history
      
             order_count = client.order_data.size
-            client.order_data.delete_if {|order| Ticket.find_by_order_number(order[:order_number]) ? true : false}
+            client.order_data.delete_if {|order| Ticket.fetched.find_by_order_number(order[:order_number]) ? true : false}
             logger.debug "We have #{client.order_data.size} new orders"
             logger.debug "Newest is #{client.order_data.first[:order_date]} and oldest is #{client.order_data.last[:order_date]}" if client.order_data.size > 0
       
@@ -52,7 +49,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
                           :tm_order_date => Date.parse(order[:order_date]), 
                           :tm_event_name => order[:event_name],
                           :tm_venue_name => order[:venue_name],
-                          :tm_event_date => Date.parse(order[:event_date])
+                          :tm_event_date => Date.parse(order[:event_date]) unless Ticket.find_by_order_number(order[:order_number])
           end
 
           # factor this out where possible
@@ -134,6 +131,8 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
     end
  
     threads.each do |t|  logger.debug 'joining thread'; t.join; end
+    logger.debug "Telling the job queue worker that we are done"
+    MiddleMan.worker(:job_queue_worker).register_done_working
 
   end
 end

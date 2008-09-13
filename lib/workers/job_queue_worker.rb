@@ -6,13 +6,42 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
     logger.debug 'setting up queue worker'
     @jobs = []
     @job_results = {}
+    @next_job = 2.minutes.from_now
     logger.debug 'cool!'
+  end
+  
+  def next_work_time=(time)
+    logger.debug "SETTING NEXT WORK TIME! #{time.inspect}"
+    @next_work_time = time
+  end
+  
+  def register_work_done
+    logger.debug "REGISTERED: work is done"
+    @still_working = false
+  end
+  
+  def next_work_time
+    @next_work_time
+  end
+  
+  def start_work
+    next_work_time = 4.hours.from_now
+    @still_working = true
+  end
+  
+  def working?
+    @still_working
   end
   
   # This assumes a job never ever fails, is this a problem?
   def get_job
     @mutex.synchronize {
-      @jobs.shift || {:action => :instance_eval, :eval_code => "exit"}#{:action => :sleep, :duration => 5}
+      if(@next_job - Time.now < 5) 
+        logger.debug "Starting work!"
+        start_work
+      end
+        
+      @jobs.shift || {:action => :sleep, :duration => ((@next_job - Time.now < 30) || working? ? 5 : 30)}
     }
   end
   
