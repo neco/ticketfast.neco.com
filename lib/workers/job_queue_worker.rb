@@ -37,12 +37,12 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
   # This assumes a job never ever fails, is this a problem?
   def get_job
     @mutex.synchronize {
-      if(@next_job - Time.now < 5 and !working?) 
+      if(next_work_time - Time.now < 5 and !working?) 
         logger.debug "Starting work!"
         start_work
       end
         
-      @jobs.shift || {:action => :sleep, :duration => ((@next_job - Time.now < 30) || working? ? 5 : 30)}
+      @jobs.shift || {:action => :sleep, :duration => ((next_work_time - Time.now < 30) || working? ? 5 : 30)}
     }
   end
   
