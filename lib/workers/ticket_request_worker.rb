@@ -108,7 +108,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
 
                 ticket ||= ticket_parser.saved_ticket
                 
-                old_ticket = Ticket.find(:first, :conditions => {:order_number => order[:order_number], :unfetched => true}).destroy
+                Ticket.find(:first, :conditions => {:order_number => order[:order_number], :unfetched => true}).destroy
                 
                 ticket.tm_account_id = tm_account_id
                 ticket.order_number = order[:order_number]
@@ -118,7 +118,6 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
                 ticket.tm_event_date = order[:event_date]
                 ticket.save
                 logger.debug ticket.inspect
-                old_ticket.destroy
         
                 # Place the PDF ticket in the right place and clean up temporary pdftotext output file
                 `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
