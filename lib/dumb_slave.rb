@@ -59,7 +59,13 @@ class DumbSlave
     end
     
     `curl -s #{%[--data "@postdata" ] if options[:post_data]} --insecure "#{uri}" -c mycookies #{'-b cookies' if options[:send_cookies]} -u "neco:hurricane123" -o src_out`
-    File.read('src_out')
+    if options[:binary]
+      f = File.open('src_out')
+      f.binmode
+      f.read
+    else
+      File.read('src_out')
+    end
   end
 end
 

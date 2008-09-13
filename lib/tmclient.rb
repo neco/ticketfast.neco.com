@@ -104,6 +104,10 @@ class TMClient
     
     refresh_loop
     
+    uri = 'https://www.ticketmaster.com' + doc.at("//span[@class='messageText']/a")['href']
+    
+    self.src = fetch_request(uri, :binary => true)
+    
     debug "* Tickets fetched"
   end
   
@@ -167,6 +171,9 @@ class TMClient
   
   def refresh_loop
     loop do
+      # check to make sure it is not a download page
+      return if src =~ /tickets will begin downloading automatically/
+      
       http_refresh_el = doc.at("//meta[@http-equiv='refresh']")
       return if http_refresh_el.nil?
       debug "** In a refresh loop, waiting 4 seconds until trying again"
