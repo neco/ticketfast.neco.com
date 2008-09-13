@@ -6,7 +6,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
     logger.debug 'setting up queue worker'
     @jobs = []
     @job_results = {}
-    @next_job = 2.minutes.from_now
+    self.next_work_time = 2.minutes.from_now
     logger.debug 'cool!'
   end
   
@@ -25,8 +25,9 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
   end
   
   def start_work
-    next_work_time = 4.hours.from_now
+    self.next_work_time = 4.hours.from_now
     @still_working = true
+    MiddleMan.worker(:ticket_request_worker).async_save_unseen_tickets
   end
   
   def working?
