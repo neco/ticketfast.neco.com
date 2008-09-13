@@ -17,6 +17,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
   
   def register_work_done
     logger.debug "REGISTERED: work is done"
+    logger.debug "Next work time: #{next_work_time.inspect}"
     @still_working = false
   end
   
