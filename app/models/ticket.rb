@@ -16,6 +16,10 @@ class Ticket < ActiveRecord::Base
     `cd #{RAILS_ROOT} && pdf2dsc #{pdf_rel_filepath} #{RAILS_ROOT}/tmp/#{id}.dsc`
     `convert #{RAILS_ROOT}/tmp/#{id}.dsc #{jpg_filepath}`
     `rm #{RAILS_ROOT}/tmp/#{id}.dsc`
+    has_quickview?
+  end
+  
+  def has_quickview?
     File.exists?(jpg_filepath)
   end
   
