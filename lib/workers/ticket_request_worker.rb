@@ -132,7 +132,8 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
  
     threads.each do |t|  logger.debug 'joining thread'; t.join; end
     logger.debug "Telling the job queue worker that we are done"
-    MiddleMan.worker(:job_queue_worker).register_done_working
+    MiddleMan.worker(:job_queue_worker).async_register_work_done
+    logger.debug "Told the job queue worker we are done"
 
   end
 end
