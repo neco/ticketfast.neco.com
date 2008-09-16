@@ -5,6 +5,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
     @mutex = Mutex.new
     logger.debug 'setting up queue worker'
     @jobs = []
+    @targetted_jobs = {}
     @job_results = {}
     set_next_work_time 15.seconds.from_now
     logger.debug 'cool!'
@@ -36,22 +37,25 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
   end
   
   # This assumes a job never ever fails, is this a problem?
-  def get_job
+  def get_job(remote_ip)
     @mutex.synchronize {
       if(next_work_time - Time.now < 5 and !working?) 
         logger.debug "Starting work!"
         start_work
       end
-        
+      if @targetted_jobs[remote_ip].size > 0
+        logger.debug "Getting targetted job for #{remote_ip}"
+        return @targetted_jobs[remote_ip].shift
+      end
       @jobs.shift || {:action => :sleep, :duration => ((next_work_time - Time.now < 30) || working? ? 5 : 30)}
     }
   end
   
   def submit_work(args)
     @mutex.synchronize {
-      logger.debug "** submitting work for client key #{args[:client_key]}"
+      logger.debug "** submitting work for client key #{args[:client_key]} and ip #{args[:remote_ip]}" 
       client_key, results = args[:client_key], args[:results]
-      @job_results[client_key] = results
+      @job_results[client_key] = results.merge(:remote_ip => args[:remote_ip])
       logger.debug "** work received"
     }
   end
@@ -60,7 +64,15 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
     @mutex.synchronize {
       logger.debug "** fetching request: #{args.inspect}"
       client_key, uri, options = args[:client_key], args[:uri], args[:options]
-      @jobs << {:action => :fetch_request, :client_key => client_key, :uri => uri, :options => options}
+      job_data = {:action => :fetch_request, :client_key => client_key, :uri => uri, :options => options}
+      if args[:job_target]
+        logger.debug "Creating targetted job for #{args[:job_target]}"
+        @targetted_jobs[args[:job_target]] ||= []
+        @targetted_jobs[args[:job_target]] << job_data
+      else
+        logger.debug "Creating normal job"
+        @jobs << job_data
+      end
       @job_results[client_key] = false
     }
   end

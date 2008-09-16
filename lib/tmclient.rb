@@ -4,7 +4,7 @@ require 'cgi'
 require 'timeout'
 
 class TMClient
-  attr_accessor :form_data, :doc, :src, :order_data, :pages_fetched, :cookies, :logger
+  attr_accessor :form_data, :doc, :src, :order_data, :pages_fetched, :cookies, :logger, :job_target
   
   def initialize(username='dgainor99@gmail.com', password='060381', logger=nil)
     @username, @password = username, password
@@ -150,8 +150,15 @@ class TMClient
     loop do
       count += 1
       debug "Sending fetch_request call to job_queue_worker DONE THIS: #{count}"
+      if count > 1
+        debug "Dispatching a new client, logging in again then repeating request"
+        @logged_in = false
+        self.job_target = nil
+        login_loop
+      end
+      
       sleep(rand)
-      MiddleMan.worker(:job_queue_worker).async_fetch_request(:arg => {:client_key => job_key, :uri => uri, :options => options})
+      MiddleMan.worker(:job_queue_worker).async_fetch_request(:arg => {:client_key => job_key, :uri => uri, :options => options, :job_target => job_target})
     
       10.times do
         sleep(3)
@@ -172,6 +179,7 @@ class TMClient
             break
           end
           self.cookies = resp[:cookies]
+          self.job_target = resp[:remote_ip]
           return resp[:src] 
         end
       end
