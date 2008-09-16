@@ -189,7 +189,9 @@ class TMClient
   def refresh_loop
     loop do
       # check to make sure it is not a download page
-      return if src =~ /tickets will begin downloading automatically/
+      if src =~ /tickets\s+will\s+begin\s+downloading\s+automatically/
+        debug "found download page!"
+      end
       
       http_refresh_el = doc.at("//meta[@http-equiv='refresh']")
       return if http_refresh_el.nil?
