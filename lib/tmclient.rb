@@ -105,6 +105,8 @@ class TMClient
       return
     end
     
+    raise "tickets are unavailable according to TM" if src =~ /We\s+are\s+having\s+problems\s+processing\s+your\s+tickets/
+    
     uri = 'https://www.ticketmaster.com' + doc.at("//div[@class='button']")['onclick'].gsub(/^.*?\('(.*)'\)$/, '\1')
         
     debug "* Found order, loading tickets download window"
