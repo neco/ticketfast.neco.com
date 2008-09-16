@@ -78,8 +78,9 @@ class TMClient
     self.order_data ||= []
     rows = doc / "table.detailsTable tr"
     rows.shift # shift off the row of th elements
-    puts "row size: #{rows.size}"
+    debug "row size: #{rows.size}"
     rows.each do |row|
+      debug row.inspect
       self.order_data << {
         :order_date => row.at("//td[1]").innerHTML,
         :order_number => (row.at("//td[2]/a") || row.at("//td[2]")).innerHTML.gsub('/', ' ').strip,
@@ -89,6 +90,7 @@ class TMClient
         :get_tickets_uri => 'https://www.ticketmaster.com' + row.at("//td[3]//a")['href'] 
       } if row.at("//td[3]//a") 
     end
+    debug "order data size now: #{order_data.size}"
     self.pages_fetched += 1
   end
   
