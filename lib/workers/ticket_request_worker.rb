@@ -18,16 +18,16 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
     @clients.each do |tmacct, tmclient|
       while threads.size > 4
         sleep 5
-        puts "waiting on threads, we have #{threads.size}"
+        logger.debug "waiting on threads, we have #{threads.size}"
         threads.each do |t| 
           unless t.alive?
-            puts 'killing a thread'
+            logger.debug 'killing a thread'
             threads.delete(t)
             ActiveRecord::Base.verify_active_connections!
           end
         end
       end
-      
+      sleep(2)
       threads << Thread.new(tmacct.id, tmclient) do |tm_account_id, client| 
         begin
           unique_id = rand(10000)
