@@ -55,7 +55,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
            
             
             
-            get_more_orders = false if client.order_data.size < order_count or Date.parse(client.order_data.last[:order_date]) < cutoff_date
+            get_more_orders = false if unfetched_order_numbers.size == 0 and (client.order_data.size < order_count or Date.parse(client.order_data.last[:order_date]) < cutoff_date)
           end
     
           client.order_data.each do |order|
