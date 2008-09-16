@@ -1,1 +1,7 @@
-make it refetch unfetched tickets and give that priority
+restrict it to 8-7
+
+make it use the date to fetch unfetched tickets, what if they are on page 2?
+
+make sure that it is grabbing all new tickets! we dont want to lose any tickets
+
+when asking for a redo on a request kill the last job it replaced
