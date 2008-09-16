@@ -43,7 +43,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
         start_work
       end
         
-      @jobs.shift || {:action => :sleep, :duration => ((next_work_time - Time.now < 30) || working? ? 5 : 60 * 10)}
+      @jobs.shift || {:action => :sleep, :duration => ((next_work_time - Time.now < 30) || working? ? 5 : 30)}
     }
   end
   

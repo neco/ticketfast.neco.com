@@ -132,7 +132,7 @@ class TMClient
   def log_in
     self.src = fetch_request('https://www.ticketmaster.com' + doc.at("//form[@name='sign_in']")['action'], :post_data => form_data)
     self.doc = Hpricot(src)
-    raise 'Unable to log in' if doc.at("//form@[name='sign_in']")
+    raise 'Unable to log in' if doc.at("//form[@name='sign_in']")
     @logged_in = true 
   end
   
