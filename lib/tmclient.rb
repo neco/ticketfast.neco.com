@@ -194,6 +194,7 @@ class TMClient
       # check to make sure it is not a download page
       if src =~ /tickets\s+will\s+begin\s+downloading\s+automatically/
         debug "found download page!"
+        return
       end
       
       http_refresh_el = doc.at("//meta[@http-equiv='refresh']")
