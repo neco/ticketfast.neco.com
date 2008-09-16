@@ -6,7 +6,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
     logger.debug 'setting up queue worker'
     @jobs = []
     @job_results = {}
-    set_next_work_time 2.minutes.from_now
+    set_next_work_time 15.seconds.from_now
     logger.debug 'cool!'
   end
   

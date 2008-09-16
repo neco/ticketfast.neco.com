@@ -35,10 +35,14 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
             client.get_order_history
      
             order_count = client.order_data.size
+            logger.debug "Order count: #{order_count}"
+            logger.debug "Order data: #{client.order_data.inspect}"
+            
             client.order_data.delete_if {|order| Ticket.fetched.find_by_order_number(order[:order_number]) ? true : false}
             logger.debug "We have #{client.order_data.size} new orders"
             logger.debug "Newest is #{client.order_data.first[:order_date]} and oldest is #{client.order_data.last[:order_date]}" if client.order_data.size > 0
-      
+           
+            logger.debug "still here"
             get_more_orders = false if client.order_data.size < order_count or Date.parse(client.order_data.last[:order_date]) < cutoff_date
           end
     
