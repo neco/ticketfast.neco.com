@@ -79,7 +79,7 @@ class TMClient
     rows = doc / "table.detailsTable tr"
     rows.shift # shift off the row of th elements
     debug "row size: #{rows.size}"
-    if rows.size > 0 
+    if rows.size == 0 
       debug "writing error to fetch_order_hist_error"
       File.open("#{RAILS_ROOT}/tmp/fetch_order_hist_error", 'w') {|f| f.write src}
     end
