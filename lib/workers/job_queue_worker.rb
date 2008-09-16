@@ -62,7 +62,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
   
   def fetch_request(args)
     @mutex.synchronize {
-      logger.debug "** fetching request: #{args.inspect}"
+      logger.debug "** fetching request: #{args.reject{|k,v| k == :options}.inspect}"
       client_key, uri, options = args[:client_key], args[:uri], args[:options]
       job_data = {:action => :fetch_request, :client_key => client_key, :uri => uri, :options => options}
       if args[:job_target]
