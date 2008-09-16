@@ -16,6 +16,18 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
     ActiveRecord::Base.allow_concurrency = true
     
     @clients.each do |tmacct, tmclient|
+      while threads.size > 4
+        sleep 5
+        puts "waiting on threads, we have #{threads.size}"
+        threads.each do |t| 
+          unless t.alive?
+            puts 'killing a thread'
+            threads.delete(t)
+            ActiveRecord::Base.verify_active_connections!
+          end
+        end
+      end
+      
       threads << Thread.new(tmacct.id, tmclient) do |tm_account_id, client| 
         begin
           unique_id = rand(10000)
@@ -154,7 +166,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
       end
     end
  
-    threads.each do |t|  logger.debug 'joining thread'; t.join; end
+    threads.each do |t|  logger.debug 'final join: joining thread'; t.join; ActiveRecord::Base.verify_active_connections!; end
     logger.debug "Telling the job queue worker that we are done"
     MiddleMan.worker(:job_queue_worker).async_register_work_done
     logger.debug "Told the job queue worker we are done"
