@@ -30,19 +30,31 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           #
           # If we see tickets ordered before the cutoff_date, we stop looking further
           get_more_orders = true
+          unfetched_order_numbers = TmAccount.find(tm_account_id).tickets.unfetched.collect{|t| t.order_number}
           while get_more_orders
             logger.debug "Getting a page of order history"
             client.get_order_history
      
             order_count = client.order_data.size
+            
+            raise "couldnt load any orders" if order_count == 0
+            
             logger.debug "Order count: #{order_count}"
             logger.debug "Order data: #{client.order_data.inspect}"
             
             client.order_data.delete_if {|order| Ticket.fetched.find_by_order_number(order[:order_number]) ? true : false}
+            
+            logger.debug "Unfetched order numbers: #{unfetched_order_numbers.size}"
+            
+            unfetched_order_numbers.delete_if {|num| client.order_data.reject{|o| o[:order_number] != num}.size > 0}
+            
+            logger.debug "Unfetched order numbers after filter: #{unfetched_order_numbers.size}"
+            
             logger.debug "We have #{client.order_data.size} new orders"
             logger.debug "Newest is #{client.order_data.first[:order_date]} and oldest is #{client.order_data.last[:order_date]}" if client.order_data.size > 0
            
-            logger.debug "still here"
+            
+            
             get_more_orders = false if client.order_data.size < order_count or Date.parse(client.order_data.last[:order_date]) < cutoff_date
           end
     

@@ -35,26 +35,13 @@ class TMClient
     rescue Exception => e
       debug "* Ticket is unavailable"
       debug "* Exception: #{e.inspect}"
+      File.open("#{RAILS_ROOT}/tmp/error_page", 'w') {|f| f.write src}
       return false
     end
     order_data.shift
   end
   
   def get_order_history
-    unless logged_in?
-      begin
-        debug "* Requesting login page"
-        goto_login_page
-    
-        debug "* Sending login request"
-        log_in
-      rescue
-        debug "* Could not get logged in!"
-        raise
-      end
-      debug "* Login successful"
-    end
-    
     debug "* Fetching and parsing a page of order history"
     fetch_order_history_page
   end
@@ -65,8 +52,26 @@ class TMClient
 
   private
   
+  def login_loop
+    while !logged_in?
+      debug "* Gotta log in!"
+      begin
+        debug "* Requesting login page"
+        goto_login_page
+
+        debug "* Sending login request"
+        log_in
+      rescue
+        debug "* Could not get logged in!"
+        raise
+      end
+      debug "* Login successful"
+    end
+  end
   
   def fetch_order_history_page
+    login_loop
+    
     self.src = fetch_request("https://www.ticketmaster.com/member/order_history?start=#{pages_fetched}")
     self.doc = Hpricot(src)
     self.order_data ||= []
@@ -87,6 +92,8 @@ class TMClient
   end
   
   def fetch_ticket(order_hash)
+    login_loop
+    
     debug "* Requesting order information page"
     self.src = fetch_request(order_hash[:get_tickets_uri])
     self.doc = Hpricot(src)
@@ -123,10 +130,10 @@ class TMClient
   end
   
   def log_in
-    self.src = fetch_request('https://www.ticketmaster.com/member/', :post_data => form_data)
+    self.src = fetch_request('https://www.ticketmaster.com/' + doc.at("//form@[name='sign_in']")['action'], :post_data => form_data)
     self.doc = Hpricot(src)
-    raise 'Unable to log in' unless doc.at("//a[@href='https://www.ticketmaster.com/member/order_history?tm_link=mytm_myacct14']")
-    @logged_in = true
+    raise 'Unable to log in' if doc.at("//form@[name='sign_in']")
+    @logged_in = true 
   end
   
   def fetch_request(uri, options = {})
