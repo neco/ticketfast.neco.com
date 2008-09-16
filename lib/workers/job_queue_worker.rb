@@ -43,7 +43,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
         logger.debug "Starting work!"
         start_work
       end
-      if @targetted_jobs[remote_ip].size > 0
+      if @targetted_jobs[remote_ip] and @targetted_jobs[remote_ip].size > 0
         logger.debug "Getting targetted job for #{remote_ip}"
         return @targetted_jobs[remote_ip].shift
       end
