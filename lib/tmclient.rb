@@ -27,8 +27,10 @@ class TMClient
   end
   
   def save_ticket(dest_path)
+    order = order_data.shift
     begin
-      fetch_ticket(order_data.first)
+      debug "* Fetching #{order.inspect}"
+      fetch_ticket(order)
       debug "* Received ticket, saving as #{dest_path}"
       File.open(dest_path, 'w') { |f| f.write src }
       return true
@@ -38,7 +40,6 @@ class TMClient
       File.open("#{RAILS_ROOT}/tmp/error_page", 'w') {|f| f.write src}
       return false
     end
-    order_data.shift
   end
   
   def get_order_history
