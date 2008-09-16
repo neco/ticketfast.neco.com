@@ -87,7 +87,7 @@ class TMClient
         :venue_name => row.at("//td[3]/div[@class='smallText']").innerHTML.gsub(/<br.+$/m, ''),
         :event_date => row.at("//td[4]").innerHTML.strip,
         :get_tickets_uri => 'https://www.ticketmaster.com' + row.at("//td[3]//a")['href'] 
-      }
+      } if row.at("//td[3]//a") 
     end
     self.pages_fetched += 1
   end
