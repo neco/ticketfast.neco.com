@@ -121,7 +121,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
 
                 ticket ||= ticket_parser.saved_ticket
                 
-                Ticket.find(:first, :conditions => {:order_number => order[:order_number], :unfetched => true}).destroy
+                Ticket.unfetched.find(:first, :conditions => {:order_number => order[:order_number]}).destroy
                 
                 ticket.tm_account_id = tm_account_id
                 ticket.order_number = order[:order_number]
