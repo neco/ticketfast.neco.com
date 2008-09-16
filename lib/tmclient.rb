@@ -72,6 +72,7 @@ class TMClient
     self.order_data ||= []
     rows = doc / "table.detailsTable tr"
     rows.shift # shift off the row of th elements
+    puts "row size: #{rows.size}"
     rows.each do |row|
       self.order_data << {
         :order_date => row.at("//td[1]").innerHTML,
