@@ -12,6 +12,9 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
       @clients[acct] = TMClient.new(acct.username, acct.password, logger)
     end
     threads = []
+    
+    ActiveRecord::Base.allow_concurrency = true
+    
     @clients.each do |tmacct, tmclient|
       threads << Thread.new(tmacct.id, tmclient) do |tm_account_id, client| 
         begin
@@ -20,7 +23,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           # do not grab tickets purchased before 9/1/08
           cutoff_date = Date.new(2008,9,1)
     
-          logger.debug "working with #{tm_account_id}, #{client.inspect}"
+          logger.debug "working with #{tm_account_id}, #{client.username}:#{client.password}"
           logger.debug "client order data #{client.order_data.inspect}"
     
           # This loop grabs a page of order history, and gets rid of tickets we have already received

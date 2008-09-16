@@ -4,17 +4,17 @@ require 'cgi'
 require 'timeout'
 
 class TMClient
-  attr_accessor :form_data, :doc, :src, :order_data, :pages_fetched, :cookies, :logger, :job_target
+  attr_accessor :form_data, :doc, :src, :order_data, :pages_fetched, :cookies, :logger, :job_target, :username, :password
   
   def initialize(username='dgainor99@gmail.com', password='060381', logger=nil)
-    @username, @password = username, password
+    self.username, self.password = username, password
     self.logger = logger
     self.pages_fetched = 0
     self.order_data = []
   end
   
   def debug msg
-    out = "[TMCLIENT #{@username} #{Time.now.strftime("%H:%M:%S")}] #{msg}"
+    out = "[TMCLIENT #{self.username} #{Time.now.strftime("%H:%M:%S")}] #{msg}"
     if logger
       logger.debug(out)
     else
@@ -127,8 +127,8 @@ class TMClient
     self.doc = Hpricot(src)
     raise "Site appears to be down?" unless doc.at("//input[@name='v']")
     self.form_data = {'v'             =>    doc.at("//input[@name='v']")['value'],
-                      'email_address' =>    CGI::escape(@username),
-                      'password'      =>    CGI::escape(@password) }
+                      'email_address' =>    CGI::escape(self.username),
+                      'password'      =>    CGI::escape(self.password) }
   end
   
   def log_in
@@ -146,7 +146,7 @@ class TMClient
     
     options[:cookies] = cookies if options[:send_cookies]
     
-    job_key = @username + rand(10000000).to_s
+    job_key = self.username + rand(10000000).to_s
     
     count = 0
     loop do
