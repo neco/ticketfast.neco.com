@@ -82,7 +82,7 @@ class TMClient
     rows.each do |row|
       self.order_data << {
         :order_date => row.at("//td[1]").innerHTML,
-        :order_number => row.at("//td[2]/a").innerHTML.gsub('/', ' '),
+        :order_number => (row.at("//td[2]/a") || row.at("//td[2]")).innerHTML.gsub('/', ' ').strip,
         :event_name => row.at("//td[3]/strong").innerHTML,
         :venue_name => row.at("//td[3]/div[@class='smallText']").innerHTML.gsub(/<br.+$/m, ''),
         :event_date => row.at("//td[4]").innerHTML.strip,
