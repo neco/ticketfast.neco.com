@@ -109,6 +109,9 @@ class TMClient
     raise "TM: we are having problems processing" if src =~ /We\s+are\s+having\s+problems\s+processing\s+your\s+tickets/
     raise "TM: We are currently processing the online delivery of your tickets" if src =~ /We\s+are\s+currently\s+processing\s+the\s+online\s+delivery\s+of\s+your\s+tickets/
     
+    if(!doc.at("//div[@class='button']"))
+      File.open("#{RAILS_ROOT}/tmp/bad_fetch_ticket",'w'){|f|f.write src}
+    end
     
     uri = 'https://www.ticketmaster.com' + doc.at("//div[@class='button']")['onclick'].gsub(/^.*?\('(.*)'\)$/, '\1')
         

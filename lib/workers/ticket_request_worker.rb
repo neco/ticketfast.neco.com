@@ -45,7 +45,10 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
             logger.debug "Order count: #{order_count}"
             logger.debug "Order data: #{client.order_data.inspect}"
             
-            client.order_data.delete_if {|order| Ticket.fetched.find_by_order_number(order[:order_number]) ? true : false}
+            client.order_data.delete_if {|order|
+              (Ticket.fetched.find_by_order_number(order[:order_number]) or Date.parse(order[:order_date]) < cutoff_date) ? true : false
+            }
+            
             
             logger.debug "Unfetched order numbers: #{unfetched_order_numbers.size}"
             
@@ -58,7 +61,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
            
             
             
-            get_more_orders = false if unfetched_order_numbers.size == 0 and (client.order_data.size < order_count or Date.parse(client.order_data.last[:order_date]) < cutoff_date)
+            get_more_orders = false if unfetched_order_numbers.size == 0 and (client.order_data.size < order_count)
           end
     
           client.order_data.each do |order|
@@ -124,7 +127,9 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
 
                 ticket ||= ticket_parser.saved_ticket
                 
-                Ticket.unfetched.find(:first, :conditions => {:order_number => order[:order_number]}).destroy
+                tickets_to_destroy = TmAccount.find(tm_account_id).unfetched.find(:first, :conditons => {:order_number => order[:order_number]})
+                logger.debug "trying to get rid of #{tickets_to_destroy.inspect}"
+                tickets_to_destroy.each {|t| t.destroy}
                 
                 ticket.tm_account_id = tm_account_id
                 ticket.order_number = order[:order_number]
