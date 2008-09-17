@@ -53,6 +53,9 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           while get_more_orders
             logger.debug "Getting a page of order history"
             client.get_order_history
+            client.get_order_history
+            client.get_order_history
+            client.get_order_history
      
             order_count = client.order_data.size
             
