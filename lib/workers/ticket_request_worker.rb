@@ -5,10 +5,6 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
   def create(args = nil)
     @accounts = TmAccount.enabled
   end
-  
-  def target_in_use?(remote_ip)
-    @clients.collect{|c| c.job_target}.include?(remote_ip)
-  end
 
   def save_unseen_tickets
     @clients = {}
@@ -20,7 +16,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
     ActiveRecord::Base.allow_concurrency = true
     
     @clients.each do |tmacct, tmclient|
-      while threads.size >= 2
+      while threads.size >= 5
         sleep 5
         logger.debug "waiting on threads, we have #{threads.size}"
         threads.each do |t| 

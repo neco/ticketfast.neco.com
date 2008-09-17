@@ -4,13 +4,23 @@ require 'cgi'
 require 'timeout'
 
 class TMClient
-  attr_accessor :form_data, :doc, :src, :order_data, :pages_fetched, :cookies, :logger, :job_target, :username, :password
+  attr_accessor :form_data, :doc, :src, :order_data, :pages_fetched, :cookies, :logger, :username, :password
   
   def initialize(username='dgainor99@gmail.com', password='060381', logger=nil)
     self.username, self.password = username, password
     self.logger = logger
     self.pages_fetched = 0
     self.order_data = []
+  end
+  
+  def job_target= val
+    MiddleMan.worker(:job_status_worker).async_remove_job_target(:arg => {:remote_ip => val})
+    MiddleMan.worker(:job_status_worker).async_add_job_target(:arg => {:remote_ip => val}) unless val.nil?
+    @job_target = val
+  end
+  
+  def job_target
+    @job_target
   end
   
   def debug msg
@@ -90,8 +100,8 @@ class TMClient
         :event_name => row.at("//td[3]/strong").innerHTML,
         :venue_name => row.at("//td[3]/div[@class='smallText']").innerHTML.gsub(/<br.+$/m, ''),
         :event_date => row.at("//td[4]").innerHTML.strip.gsub(/\/([0-9]{2})$/, '/20\1'),
-        :get_tickets_uri => 'https://www.ticketmaster.com' + row.at("//td[3]//a")['href'] 
-      } if row.at("//td[3]//a") 
+        :get_tickets_uri => 'https://www.ticketmaster.com' + (row.at("//td[3]//a") || row.at("//td[2]/a")['href'] 
+      } if row.at("//td[3]//a") or  row.at("//td[2]/a")
     end
     debug "order data size now: #{order_data.size}"
     self.pages_fetched += 1
