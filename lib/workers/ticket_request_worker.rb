@@ -16,7 +16,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
     ActiveRecord::Base.allow_concurrency = true
     
     @clients.each do |tmacct, tmclient|
-      while threads.size > 4
+      while threads.size >= 2
         sleep 5
         logger.debug "waiting on threads, we have #{threads.size}"
         threads.each do |t| 
