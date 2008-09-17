@@ -98,7 +98,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           end
           
           
-          raise "HAHAHAHAHAHHAHAH"
+          #raise "HAHAHAHAHAHHAHAH"
           
           # factor this out where possible
           tmp_dir = "#{RAILS_ROOT}/#{Setting['tmp_dir']}"
