@@ -1,5 +1,5 @@
-var DT = YAHOO.widget.DataTable,
-    DS = YAHOO.util.DataSource;
+var DT = YAHOO.widget.DataTable;
+var DS = YAHOO.util.DataSource;
 
 var commonDT = {
   dataTable: null,

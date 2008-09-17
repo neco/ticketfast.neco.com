@@ -64,6 +64,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
             
             logger.debug "Unfetched order numbers: #{unfetched_order_numbers.size}"
             
+            logger.debug "Unfetched orders: #{unfetched_order_numbers.inspect}"
             unfetched_order_numbers.delete_if {|num| client.order_data.reject{|o| o[:order_number] != num}.size > 0}
             
             logger.debug "Unfetched order numbers after filter: #{unfetched_order_numbers.size}"
