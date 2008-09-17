@@ -45,8 +45,11 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
     if @targetted_jobs[remote_ip] and @targetted_jobs[remote_ip].size > 0
       logger.debug "Getting targetted job for #{remote_ip}"
       return @targetted_jobs[remote_ip].shift
+    elsif MiddleMan.worker(:ticket_request_worker).target_in_use?(:arg => remote_ip)
+      {:action => :sleep, :duration => 5}
+    else
+      @jobs.shift || {:action => :sleep, :duration => ((next_work_time - Time.now < 30) || working? ? 5 : 30)}
     end
-    @jobs.shift || {:action => :sleep, :duration => ((next_work_time - Time.now < 30) || working? ? 5 : 30)}
   end
   
   def submit_work(args)
