@@ -53,6 +53,9 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           while get_more_orders
             logger.debug "Getting a page of order history"
             client.get_order_history
+            client.get_order_history
+            client.get_order_history
+            client.get_order_history
      
             order_count = client.order_data.size
             
@@ -98,7 +101,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           end
           
           
-          #raise "HAHAHAHAHAHHAHAH"
+          raise "HAHAHAHAHAHHAHAH"
           
           # factor this out where possible
           tmp_dir = "#{RAILS_ROOT}/#{Setting['tmp_dir']}"
