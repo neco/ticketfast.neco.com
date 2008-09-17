@@ -53,9 +53,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           while get_more_orders
             logger.debug "Getting a page of order history"
             client.get_order_history
-            client.get_order_history
-            client.get_order_history
-            client.get_order_history
+
      
             order_count = client.order_data.size
             
@@ -100,9 +98,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
                           :tm_event_date => Date.parse(order[:event_date]) unless Ticket.find_by_order_number(order[:order_number])
           end
           
-          
-          raise "HAHAHAHAHAHHAHAH"
-          
+                    
           # factor this out where possible
           tmp_dir = "#{RAILS_ROOT}/#{Setting['tmp_dir']}"
           pdf_dir = "#{RAILS_ROOT}/#{Setting['pdf_dir']}"
