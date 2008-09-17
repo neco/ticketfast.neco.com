@@ -100,8 +100,8 @@ class TMClient
         :event_name => row.at("//td[3]/strong").innerHTML,
         :venue_name => row.at("//td[3]/div[@class='smallText']").innerHTML.gsub(/<br.+$/m, ''),
         :event_date => row.at("//td[4]").innerHTML.strip.gsub(/\/([0-9]{2})$/, '/20\1'),
-        :get_tickets_uri => 'https://www.ticketmaster.com' + (row.at("//td[3]//a") || row.at("//td[2]/a")['href'] 
-      } if row.at("//td[3]//a") or  row.at("//td[2]/a")
+        :get_tickets_uri => 'https://www.ticketmaster.com' + (row.at("//td[3]//a") || row.at("//td[2]/a"))['href'] 
+      } if row.at("//td[3]//a") or row.at("//td[2]/a")
     end
     debug "order data size now: #{order_data.size}"
     self.pages_fetched += 1
