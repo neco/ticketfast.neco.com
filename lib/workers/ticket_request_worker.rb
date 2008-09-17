@@ -146,7 +146,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
 
                 ticket ||= ticket_parser.saved_ticket
                 
-                tickets_to_destroy = TmAccount.find(tm_account_id).tickets.unfetched.find(:first, :conditons => {:order_number => order[:order_number]})
+                tickets_to_destroy = TmAccount.find(tm_account_id).tickets.unfetched.find(:first, :conditions => {:order_number => order[:order_number]})
                 logger.debug "trying to get rid of #{tickets_to_destroy.inspect}"
                 tickets_to_destroy.each {|t| t.destroy}
                 
