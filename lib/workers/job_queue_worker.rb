@@ -7,6 +7,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
     @jobs = []
     @targetted_jobs = {}
     @job_results = {}
+    @temp_workers = []
     set_next_work_time 15.seconds.from_now
     logger.debug 'cool!'
   end
@@ -45,12 +46,14 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
     if @targetted_jobs[remote_ip] and @targetted_jobs[remote_ip].size > 0
       logger.debug "Getting targetted job for #{remote_ip}"
       @targetted_jobs[remote_ip].shift
-    elsif TmAccount.find_by_worker_job_target(remote_ip)
+    elsif TmAccount.find_by_worker_job_target(remote_ip) or @temp_workers.include?(remote_ip)
       logger.debug "IN USE, sleeping"
       {:action => :sleep, :duration => 5}
     else
       logger.debug "not in use, job or sleep"
-      @jobs.shift || {:action => :sleep, :duration => ((next_work_time - Time.now < 30) || working? ? 5 : 30)}
+      job = @jobs.shift
+      @temp_workers << remote_ip if job
+      job || {:action => :sleep, :duration => ((next_work_time - Time.now < 30) || working? ? 5 : 30)}
     end
   end
   
