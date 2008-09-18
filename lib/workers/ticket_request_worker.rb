@@ -88,7 +88,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
            
             
             
-            get_more_orders = false if unfetched_order_numbers.size == 0 and (client.order_data.size < order_count)
+            get_more_orders = false if unfetched_order_numbers.size == 0 and (client.order_data.size < order_count or order_count < 10)
           end
     
           client.order_data.each do |order|
