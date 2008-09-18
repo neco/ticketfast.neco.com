@@ -14,7 +14,8 @@ class TMClient
   end
   
   def job_target= val
-    MiddleMan.worker(:job_status_worker).async_remove_job_target(:arg => {:remote_ip => val})
+    debug "setting my job target"
+    MiddleMan.worker(:job_status_worker).async_remove_job_target(:arg => {:remote_ip => job_target}) if job_target
     MiddleMan.worker(:job_status_worker).async_add_job_target(:arg => {:remote_ip => val}) unless val.nil?
     @job_target = val
   end

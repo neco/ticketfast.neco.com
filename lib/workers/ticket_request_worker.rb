@@ -172,10 +172,12 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
         rescue Exception => e
           logger.debug "EXCEPTION! #{e.inspect}"
         end
+        
+      MiddleMan.worker(:job_status_worker).async_remove_job_target(:arg => {:remote_ip => client.job_target}) if client.job_target
       end
     end
  
-    threads.each do |t|  logger.debug 'final join: joining thread'; t.join; ActiveRecord::Base.verify_active_connections!; end
+    threads.each do |t|  logger.debug 'final join: joining thread'; t.join;  ActiveRecord::Base.verify_active_connections!; end
     logger.debug "Telling the job queue worker that we are done"
     MiddleMan.worker(:job_queue_worker).async_register_work_done
     logger.debug "Told the job queue worker we are done"
