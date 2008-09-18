@@ -62,7 +62,7 @@ class FetcherJob < ActiveRecord::Base
     job = find(:first, :conditions => {:job_key => job_key, :job_status => status(:ready)})
     if job
       job.update_attribute(:job_status, status(:delivered))
-      job.job_results
+      job.job_results.merge(:remote_ip => job.job_target)
     end
   end
 end
