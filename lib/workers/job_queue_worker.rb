@@ -60,6 +60,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
   def submit_work(args)
     logger.debug "** submitting work for client key #{args[:client_key]} and ip #{args[:remote_ip]}" 
     client_key, results = args[:client_key], args[:results]
+    @temp_workers.delete(args[:remote_ip])
     @job_results[client_key] = results.merge(:remote_ip => args[:remote_ip])
     logger.debug "** work received"
   end
