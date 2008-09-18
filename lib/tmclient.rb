@@ -176,20 +176,22 @@ class TMClient
       debug "Sending fetch_request call to job_queue_worker DONE THIS: #{count}"
       if count > 1 and logged_in?
         debug "Dispatching a new client, logging in again then repeating request"
+        FetcherJob.register_client_done(username)
         @logged_in = false
         self.job_target = nil
         login_loop
       end
       
       sleep(rand)
-      MiddleMan.worker(:job_queue_worker).async_fetch_request(:arg => {:client_key => job_key, :uri => uri, :options => options, :job_target => job_target})
+      
+      FetcherJob.fetch_request(:client_key => username, :job_key => job_key, :uri => uri, :options => options, :job_target => job_target)
     
       10.times do
-        sleep(3)
+        sleep(4)
         resp = nil
         begin
           Timeout.timeout(2) {
-            resp = MiddleMan.worker(:job_queue_worker).fetch_response(:arg => {:client_key => job_key})
+            resp = FetcherJob.fetch_response(:job_key => job_key)
           }
         rescue Exception => e
           debug "Timed out!"

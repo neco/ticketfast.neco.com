@@ -179,14 +179,14 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
         rescue Exception => e
           logger.debug "EXCEPTION! #{e.inspect}"
         end
-      
+        
         TmAccount.find(tm_account_id).update_attributes(:worker_status => 'stopped', :worker_last_update_at => Time.now, :worker_job_target => nil)
+        FetcherJob.register_client_done(client.username)
       end
     end
  
     threads.each do |t|  logger.debug 'final join: joining thread'; t.join;  ActiveRecord::Base.verify_active_connections!; end
     logger.debug "Telling the job queue worker that we are done"
-    MiddleMan.worker(:job_queue_worker).async_register_work_done
     logger.debug "Told the job queue worker we are done"
 
   end
