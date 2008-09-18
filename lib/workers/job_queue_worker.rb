@@ -45,7 +45,7 @@ class JobQueueWorker < BackgrounDRb::MetaWorker
     if @targetted_jobs[remote_ip] and @targetted_jobs[remote_ip].size > 0
       logger.debug "Getting targetted job for #{remote_ip}"
       @targetted_jobs[remote_ip].shift
-    elsif TmAccount.find_by_worker_job_target(remote_id)
+    elsif TmAccount.find_by_worker_job_target(remote_ip)
       logger.debug "IN USE, sleeping"
       {:action => :sleep, :duration => 5}
     else
