@@ -50,12 +50,10 @@ class FetcherJob < ActiveRecord::Base
     end
   end
   
+  # should use job key instead of client key, but doesnt matter right now
   def self.submit_work(args)
-    job_key, results, remote_ip = args[:job_key], args[:results], args[:remote_ip]
+    client_key, results, remote_ip = args[:client_key], args[:results], args[:remote_ip]
     found_job = find_by_job_key_and_job_target(job_key, remote_ip)
-    unless found_job
-      raise args.inspect
-    end
     found_job.update_attributes(:job_results => results, :job_status => status(:ready)) if found_job
   end
   

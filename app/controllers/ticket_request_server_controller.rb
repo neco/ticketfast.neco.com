@@ -13,7 +13,7 @@ class TicketRequestServerController < ApplicationController
   
   def submit_work
     results = Marshal.load(Base64.decode64(params[:results]))
-    FetcherJob.submit_work(:job_key => params[:client_key], :results => results, :remote_ip => request.remote_ip)
+    FetcherJob.submit_work(:client_key => params[:client_key], :results => results, :remote_ip => request.remote_ip)
     render :text => ''
   end
 end
