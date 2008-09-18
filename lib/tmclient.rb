@@ -174,9 +174,11 @@ class TMClient
     loop do
       count += 1
       debug "Sending fetch_request call to job_queue_worker DONE THIS: #{count}"
+      
+      FetcherJob.register_client_done(username) if count > 1
+      
       if count > 1 and logged_in?
         debug "Dispatching a new client, logging in again then repeating request"
-        FetcherJob.register_client_done(username)
         @logged_in = false
         self.job_target = nil
         login_loop
