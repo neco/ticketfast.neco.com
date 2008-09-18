@@ -180,7 +180,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           logger.debug "EXCEPTION! #{e.inspect}"
         end
       
-      TmAccount.find(tm_account_id).update_attributes(:worker_status => 'stopped', :worker_last_update_at => Time.now, :worker_job_target => nil))
+        TmAccount.find(tm_account_id).update_attributes(:worker_status => 'stopped', :worker_last_update_at => Time.now, :worker_job_target => nil)
       end
     end
  

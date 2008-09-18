@@ -36,7 +36,7 @@
         = tm_account.tickets.unfetched.count
         == (#{link_to 'view', :action => 'list_unfetched', :id => tm_account.id})
       %td== #{tm_account.disabled? ? 'Disabled' : 'Enabled'} - #{tm_account.worker_status_full} (#{link_to( (tm_account.disabled? ? 'enable' : 'disable'), :action => 'toggle_disabled', :id => tm_account.id)})
-      %td= tm_account.worker_last_update_at.strftime("%m/%d/%y")
+      %td= tm_account.worker_last_update_at.strftime("%m/%d/%y") if tm_account.worker_last_update_at
       %td= link_to('Manual fetch', {:action => 'manual_fetch', :id => tm_account.id})
       %td= link_to('Remove', {:action => 'destroy', :id => tm_account.id}, :confirm => 'Are you sure you want to delete this account?')
       
