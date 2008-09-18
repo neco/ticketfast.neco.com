@@ -35,6 +35,8 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
       sleep(2)
       threads << Thread.new(tmacct.id, tmclient) do |tm_account_id, client| 
         begin
+          TmAccount.find(tm_account_id).update_attributes(:worker_status => 'running', :worker_last_update_at => Time.now)
+          
           unique_id = rand(10000)
       
           # do not grab tickets purchased before 9/1/08
@@ -177,8 +179,8 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
         rescue Exception => e
           logger.debug "EXCEPTION! #{e.inspect}"
         end
-        
-      MiddleMan.worker(:job_status_worker).async_remove_job_target(:arg => {:remote_ip => client.job_target}) if client.job_target
+      
+      TmAccount.find(tm_account_id).update_attributes(:worker_status => 'stopped', :worker_last_update_at => Time.now, :worker_job_target => nil))
       end
     end
  

@@ -15,8 +15,7 @@ class TMClient
   
   def job_target= val
     debug "setting my job target"
-    MiddleMan.worker(:job_status_worker).async_remove_job_target(:arg => {:remote_ip => job_target}) if job_target
-    MiddleMan.worker(:job_status_worker).async_add_job_target(:arg => {:remote_ip => val}) unless val.nil?
+    TmAccount.find_by_username_and_password(username, password).update_attributes(:worker_job_target => val, :worker_last_update_at => Time.now)
     @job_target = val
   end
   
@@ -124,6 +123,7 @@ class TMClient
     
     raise "TM: we are having problems processing" if src =~ /We\s+are\s+having\s+problems\s+processing\s+your\s+tickets/
     raise "TM: We are currently processing the online delivery of your tickets" if src =~ /We\s+are\s+currently\s+processing\s+the\s+online\s+delivery\s+of\s+your\s+tickets/
+    raise "TM: processing and printing" if src =~ /Your\s+tickets\s+have\s+been\s+purchased\s+and\s+are\s+in\s+the\s+process\s+of\s+being\s+printed/
     
     if(!doc.at("//div[@class='button']"))
       File.open("#{RAILS_ROOT}/tmp/bad_fetch_ticket",'w'){|f|f.write src}
