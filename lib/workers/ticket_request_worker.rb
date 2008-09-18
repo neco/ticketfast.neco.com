@@ -6,10 +6,15 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
     @accounts = TmAccount.enabled
   end
 
-  def save_unseen_tickets
+  def save_unseen_tickets(tm_account_id = nil)
     @clients = {}
-    @accounts.each do |acct|
+    if tm_account_id
+      acct = TmAccount.find(tm_account_id)
       @clients[acct] = TMClient.new(acct.username, acct.password, logger)
+    else
+      TmAccount.enabled.each do |acct|
+        @clients[acct] = TMClient.new(acct.username, acct.password, logger)
+      end
     end
     threads = []
     

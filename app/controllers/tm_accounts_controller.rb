@@ -13,6 +13,11 @@ class TmAccountsController < ApplicationController
     redirect_to :action => 'index'
   end
   
+  def manual_fetch
+    MiddleMan.worker(:ticket_request_worker).async_save_unseen_tickets(params[:id])
+    redirect_to :action => 'index'
+  end
+  
   def toggle_disabled
     @tm_account = TmAccount.find(params[:id])
     @tm_account.disabled = @tm_account.disabled? ? false : true
