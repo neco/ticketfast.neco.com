@@ -128,6 +128,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
                 client.save_ticket(filepath)
               rescue Exception => e
                 Ticket.unfetched.find_by_order_number(order[:order_number]).update_attribute(:unfetched_reason, e.to_s)
+                next
               end
               
               logger.debug "Ticket saved, decrypting"
