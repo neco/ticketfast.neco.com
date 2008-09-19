@@ -90,7 +90,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
             
             oldest_unfetched = unfetched_order_numbers.collect{|k,v| v}.sort.first
             
-            get_more_orders = false if (unfetched_order_numbers.size == 0 or oldest_unfetched < oldest_order or order_count < 10) and (client.order_data.size < order_count or order_count < 10)
+            get_more_orders = false if (unfetched_order_numbers.size == 0 or oldest_unfetched > oldest_order or order_count < 10) and (client.order_data.size < order_count or order_count < 10)
           end
           
           
