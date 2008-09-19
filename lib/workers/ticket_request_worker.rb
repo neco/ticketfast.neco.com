@@ -3,7 +3,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
   set_worker_name :ticket_request_worker
   
   def create(args = nil)
-    @accounts = TmAccount.enabled
+    logger.debug "Creating ticket request worker"
   end
 
   def save_unseen_tickets(tm_account_id = nil)
@@ -52,13 +52,14 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           #
           # If we see tickets ordered before the cutoff_date, we stop looking further
           get_more_orders = true
-          unfetched_order_numbers = TmAccount.find(tm_account_id).tickets.unfetched.collect{|t| t.order_number}
+          unfetched_order_numbers = Hash[*(TmAccount.find(tm_account_id).tickets.unfetched.collect{|t| [t.order_number, t.tm_order_date]}.flatten)]
           while get_more_orders
             logger.debug "Getting a page of order history"
             client.get_order_history
 
      
             order_count = client.order_data.size
+            oldest_order = client.order_data.collect{|h|Date.parse(h[:order_date])}.sort.first
             
             raise "couldnt load any orders" if order_count == 0
             
@@ -69,7 +70,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
             logger.debug "Unfetched order numbers: #{unfetched_order_numbers.size}"
             
             logger.debug "Unfetched orders: #{unfetched_order_numbers.inspect}"
-            unfetched_order_numbers.delete_if {|num| 
+            unfetched_order_numbers.delete_if {|num, date| 
               logger.debug "MY NUM: #{num}"
               client.order_data.reject{|o| o[:order_number] != num}.size > 0
             }
@@ -87,8 +88,16 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
             logger.debug "Newest is #{client.order_data.first[:order_date]} and oldest is #{client.order_data.last[:order_date]}" if client.order_data.size > 0
            
             
+            oldest_unfetched = unfetched_order_numbers.collect{|k,v| v}.sort.first
             
-            get_more_orders = false if unfetched_order_numbers.size == 0 and (client.order_data.size < order_count or order_count < 10)
+            get_more_orders = false if (unfetched_order_numbers.size == 0 or oldest_unfetched < oldest_order or order_count < 10) and (client.order_data.size < order_count or order_count < 10)
+          end
+          
+          
+          if unfetched_order_numbers.size > 0
+            unfetched_order_numbers.each {|num, date|
+              TmClient.find(tm_account_id).tickets.unfetched.find_by_order_number(num).update_attribute(:unfetched_reason, 'No longer listed in order history.')
+            }
           end
     
           client.order_data.each do |order|
