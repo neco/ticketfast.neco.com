@@ -96,7 +96,8 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           
           if unfetched_order_numbers.size > 0
             unfetched_order_numbers.each {|num, date|
-              TmAccount.find(tm_account_id).tickets.unfetched.find_by_order_number(num).update_attribute(:unfetched_reason, 'No longer listed in order history.')
+                tick = TmAccount.find(tm_account_id).tickets.unfetched.find_by_order_number(num)
+                tick.update_attribute(:unfetched_reason, 'No longer listed in order history.') if tick
             }
           end
     
