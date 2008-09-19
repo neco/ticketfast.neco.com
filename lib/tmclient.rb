@@ -48,6 +48,7 @@ class TMClient
       debug "* Ticket is unavailable"
       debug "* Exception: #{e.inspect}"
       File.open("#{RAILS_ROOT}/tmp/error_page", 'w') {|f| f.write src}
+      raise
       return false
     end
   end
@@ -121,10 +122,10 @@ class TMClient
       return
     end
     
-    raise "TM: we are having problems processing" if src =~ /We\s+are\s+having\s+problems\s+processing\s+your\s+tickets/
-    raise "TM: We are currently processing the online delivery of your tickets" if src =~ /We\s+are\s+currently\s+processing\s+the\s+online\s+delivery\s+of\s+your\s+tickets/
-    raise "TM: processing and printing" if src =~ /Your\s+tickets\s+have\s+been\s+purchased\s+and\s+are\s+in\s+the\s+process\s+of\s+being\s+printed/
-    
+    if(!doc.at("//div[@class='button']"))
+      raise doc.at("//div[@class='messageText']").innerHTML
+    end
+
     if(!doc.at("//div[@class='button']"))
       File.open("#{RAILS_ROOT}/tmp/bad_fetch_ticket",'w'){|f|f.write src}
     end
