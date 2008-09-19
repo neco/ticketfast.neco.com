@@ -14,6 +14,8 @@
     - unless @unfetched
       %th PDF
       %th Quickview
+    - else
+      %th Reason
   - @tickets.each do |ticket|
     %tr
       %td&= ticket.order_number
@@ -25,3 +27,5 @@
       - unless @unfetched
         %td= link_to "PDF", :controller => "tickets", :action => "preview_pdf", :id => ticket.id
         %td= link_to('Quickview', {:controller => 'tickets', :action => 'quickview_ticket', :id => ticket.id}, {:rel => 'lightbox'})
+      - else
+        %td= ticket.unfetched_reason
