@@ -27,7 +27,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
         threads.each do |t| 
           unless t.alive?
             logger.debug 'killing a thread'
-            threads.delete(t)
+            t.join;threads.delete(t)
             ActiveRecord::Base.verify_active_connections!
           end
         end
