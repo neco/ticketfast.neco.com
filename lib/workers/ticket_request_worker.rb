@@ -33,10 +33,11 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
         end
       end
       sleep(2)
-      acct_id = tmacct.id.dup
-      threads << Thread.new(acct_id, tmclient) do |tm_account_id, client| 
+      acct_id = tmacct.id
+      threads << Thread.new(acct_id, tmclient) do |tm_acct_id, client| 
         begin
-          TmAccount.find(tm_account_id).update_attributes(:worker_status => 'running', :worker_last_update_at => Time.now)
+          tm_acct = TmAccount.find(tm_acct_id)
+          tm_acct.update_attributes(:worker_status => 'running', :worker_last_update_at => Time.now)
           
           unique_id = rand(10000)
       
@@ -53,7 +54,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           #
           # If we see tickets ordered before the cutoff_date, we stop looking further
           get_more_orders = true
-          unfetched_order_numbers = Hash[*(TmAccount.find(tm_account_id).tickets.unfetched.collect{|t| [t.order_number, t.tm_order_date]}.flatten)]
+          unfetched_order_numbers = Hash[*(tm_acct.tickets.unfetched.collect{|t| [t.order_number, t.tm_order_date]}.flatten)]
           while get_more_orders
             logger.debug "Getting a page of order history"
             client.get_order_history
@@ -97,7 +98,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           
           if unfetched_order_numbers.size > 0
             unfetched_order_numbers.each {|num, date|
-                tick = TmAccount.find(tm_account_id).tickets.unfetched.find_by_order_number(num)
+                tick = tm_acct.tickets.unfetched.find_by_order_number(num)
                 tick.update_attribute(:unfetched_reason, 'No longer listed in order history.') if tick
             }
           end
@@ -171,7 +172,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
 
                 ticket ||= ticket_parser.saved_ticket
                 
-                tickets_to_destroy = TmAccount.find(tm_account_id).tickets.unfetched.find(:all, :conditions => {:order_number => order[:order_number]})
+                tickets_to_destroy = tm_acct.tickets.unfetched.find(:all, :conditions => {:order_number => order[:order_number]})
                 logger.debug "trying to get rid of #{tickets_to_destroy.inspect}"
                 tickets_to_destroy.each {|t| t.destroy}
                 
@@ -196,7 +197,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           logger.debug "EXCEPTION! #{e.inspect}"
         end
         
-        TmAccount.find(tm_account_id).update_attributes(:worker_status => 'stopped', :worker_last_update_at => Time.now, :worker_job_target => nil)
+        tm_acct.update_attributes(:worker_status => 'stopped', :worker_last_update_at => Time.now, :worker_job_target => nil)
         FetcherJob.register_client_done(client.username)
       end
     end
