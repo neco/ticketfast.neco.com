@@ -9,8 +9,8 @@ class TicketsController < ApplicationController
   def list
     results =  params[:results] || 5
     startIndex = params[:startIndex] || 0
-    sort = params[:sort]
-    order_by = sort ? sort.gsub(/^.*?\.?([^\.]+)\.([^\.]+)$/, '\1s.\2') : 'tickets.section, tickets.row, tickets.seat'
+    sort = params[:sort] || 'none'
+    order_by = sort != 'none' ? sort.gsub(/^.*?\.?([^\.]+)\.([^\.]+)$/, '\1s.\2') : 'tickets.section, tickets.row, tickets.seat'
     dir = params[:dir] || 'asc'
     
     find_include = {:event => :venue}

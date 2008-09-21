@@ -41,7 +41,7 @@ var commonDT = {
     dir   = dir || 'asc';
     results = results || 15;
     var qstr = "results="+results+"&startIndex="+start;
-    if(key) qstr += "&sort="+key;
+    if(key && key != 'none') qstr += "&sort="+key;
     qstr += "&dir="+dir+this.getQueryConditions();
     return qstr
   },
