@@ -38,10 +38,12 @@ var commonDT = {
   // Function to generate a query string for a data request
   generateQueryString: function (start,key,dir,results) { 
     start = start || 0;
-    key   = key || 'ticket.id';
     dir   = dir || 'asc';
     results = results || 15;
-    return "results="+results+"&startIndex="+start+"&sort="+key+"&dir="+dir+this.getQueryConditions();
+    var qstr = "results="+results+"&startIndex="+start;
+    if(key) qstr += "&sort="+key;
+    qstr += "&dir="+dir+this.getQueryConditions();
+    return qstr
   },
   
   // Function used to intercept sorting requests 
@@ -98,7 +100,7 @@ var commonDT = {
         paginator : this.paginator, 
         paginationEventHandler :  this.handlePagination,
         selectionMode:"single", // disables modifier keys
-        initialRequest : this.generateQueryString(0, 'ticket.created_at', "asc", 15),
+        initialRequest : this.generateQueryString(0, null, "asc", 15),
     }; 
 
     // Instantiate DataTable 

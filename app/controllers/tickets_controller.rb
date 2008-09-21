@@ -9,13 +9,13 @@ class TicketsController < ApplicationController
   def list
     results =  params[:results] || 5
     startIndex = params[:startIndex] || 0
-    sort = params[:sort] || 'ticket.id'
-    order_by = sort.gsub(/^.*?\.?([^\.]+)\.([^\.]+)$/, '\1s.\2')
+    sort = params[:sort]
+    order_by = sort ? sort.gsub(/^.*?\.?([^\.]+)\.([^\.]+)$/, '\1s.\2') : 'tickets.section, tickets.row, tickets.seat'
     dir = params[:dir] || 'asc'
     
     find_include = {:event => :venue}
     
-    find_conditions = ['unparsed = ?', params[:unparsed] ? true : false]
+    find_conditions = ['unparsed = ? and unfetched = ?', params[:unparsed] ? true : false, params[:unfetched] ? true : false]
     params[:conditions].each do |field,val|
       find_conditions[0] += " AND #{field} LIKE ?"
       find_conditions << "#{val.strip}%"
