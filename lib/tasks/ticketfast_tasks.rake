@@ -4,6 +4,12 @@ namespace :ticketfast do
     IncomingMailHandler.process_new_mail
   end
   
+  desc 'Run tm fetcher on all enabled accounts'
+  task :fetch_tm => :environment do
+    MiddleMan.worker(:ticket_request_worker).async_save_unseen_tickets
+    puts "Running worker"
+  end
+  
   desc 'Reparse all unparsed tickets'
   task :reparse_all => :environment do
     total = Ticket.unparsed.count
