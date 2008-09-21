@@ -33,7 +33,8 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
         end
       end
       sleep(2)
-      threads << Thread.new(tmacct.id, tmclient) do |tm_account_id, client| 
+      acct_id = tmacct.id.dup
+      threads << Thread.new(acct_id, tmclient) do |tm_account_id, client| 
         begin
           TmAccount.find(tm_account_id).update_attributes(:worker_status => 'running', :worker_last_update_at => Time.now)
           
