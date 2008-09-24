@@ -112,7 +112,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
                           :tm_venue_name => order[:venue_name],
                           :tm_event_date => Date.parse(order[:event_date]) unless Ticket.find_by_order_number(order[:order_number])
             old_tick = Ticket.find_by_order_number(order[:order_number])
-            old_tick.update_attribute(:tm_account_id => tm_acct.id) if(old_tick)
+            old_tick.update_attribute(:tm_account_id, tm_acct.id) if(old_tick)
           end
           
                     
