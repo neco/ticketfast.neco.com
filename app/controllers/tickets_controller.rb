@@ -52,7 +52,7 @@ class TicketsController < ApplicationController
       find_conditions[0] += ' AND viewed = ?'    
       find_conditions << true
     end
-        
+    
     @tickets = Ticket.find :all,
       :include => find_include, 
       :conditions => find_conditions,
@@ -60,6 +60,8 @@ class TicketsController < ApplicationController
       :limit => results,
       :order => "#{order_by} #{dir}"
       
+    logger.debug @tickets.inspect
+    
     ticket_json = @tickets.to_json(
       :only => [:id, :event_id, :section, :row, :seat, :email_sent_at, :email_from, :email_subject], :include => {
         :event => {:only => [:name, :venue_id, :occurs_at, :code], :include => {

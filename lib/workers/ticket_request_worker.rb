@@ -106,7 +106,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           client.order_data.each do |order|
             Ticket.create :order_number => order[:order_number], 
                           :unfetched => true, 
-                          :tm_account_id => tm_account_id, 
+                          :tm_account_id => tm_acct.id, 
                           :tm_order_date => Date.parse(order[:order_date]), 
                           :tm_event_name => order[:event_name],
                           :tm_venue_name => order[:venue_name],
@@ -176,7 +176,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
                 logger.debug "trying to get rid of #{tickets_to_destroy.inspect}"
                 tickets_to_destroy.each {|t| t.destroy}
                 
-                ticket.tm_account_id = tm_account_id
+                ticket.tm_account_id = tm_acct.id
                 ticket.order_number = order[:order_number]
                 ticket.tm_order_date = order[:order_date]
                 ticket.tm_event_name = order[:event_name]

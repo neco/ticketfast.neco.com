@@ -35,7 +35,7 @@ YAHOO.util.Event.addListener(window, 'load', function () {
     }
     
     if($('event_name') && $F('event_name') != '')  
-      q_str += '&event_name=' + $F('event_name');
+      q_str += '&event_name=' + escape($F('event_name'));
     if($('show_all').checked) 
       q_str += '&show_all=1';
     if($('viewed_only').checked) 
@@ -43,7 +43,7 @@ YAHOO.util.Event.addListener(window, 'load', function () {
     if($('event-date-select') && $F('event-date-select') != '0') 
       q_str += '&event_id=' + $F('event-date-select');
     if($('customer_name') && $F('customer_name') != '')  
-      q_str += '&customer_name=' + $F('customer_name');
+      q_str += '&customer_name=' + escape($F('customer_name'));
     if($('event_code') && $F('event_code') != '')  
       q_str += '&event_code=' + $F('event_code');
       

@@ -44,7 +44,7 @@ class EventsController < ApplicationController
       unless e.venue
         e.venue = Venue.new
       end
-      v.name = value
+      e.venue.update_attribute(:name, value)
       e.save
     end if params[:venue_names]
     params[:event_dates].each do |key, value| next if value.empty?
