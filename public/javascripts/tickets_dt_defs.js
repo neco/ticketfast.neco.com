@@ -88,7 +88,7 @@ YAHOO.util.Event.addListener(window, 'load', function () {
     eventDate: function(elCell, oRecord, oColumn, oData) { 
       if(!oData) { elCell.innerHTML = ''; return }
       elCell.innerHTML = (oData.getMonth()+1) + '/' + oData.getDate() + '/' + oData.getFullYear() + ' at ' +
-        ((oData.getHours() - 1) % 12 + 1) + ':' + oData.getMinutes() + (oData.getMinutes() < 10 ? '0' :'') +
+        ((oData.getHours() - 1) % 12 + 1) + ':' + (oData.getMinutes() < 10 ? '0' :'') +oData.getMinutes() + 
         ' ' + (oData.getHours() > 11 ? 'pm' : 'am');
     }
     

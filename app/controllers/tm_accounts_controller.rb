@@ -1,6 +1,36 @@
 class TmAccountsController < ApplicationController
   def index
     @tm_accounts = TmAccount.find :all
+    @js_includes = ['dt_defs', 'tm_accounts_dt_defs']
+  end
+  
+  # Action called by the YUI datatable
+  def list
+    results =  params[:results] || 5
+    startIndex = params[:startIndex] || 0
+    sort = params[:sort] || 'tm_account.username'
+    order_by = sort.gsub(/^.*?\.?([^\.]+)\.([^\.]+)$/, '\1s.\2')
+    dir = params[:dir] || 'asc'
+    
+    find_include = {}
+    
+    find_conditions = []
+        
+    @tm_accounts = TmAccount.find :all,
+      :include => find_include, 
+      :conditions => find_conditions,
+      :offset => startIndex, 
+      :limit => results,
+      :order => "#{order_by} #{dir}"      
+      
+    tm_account_json = '[' + @tm_accounts.collect{|t| %({"id":#{t.id},"username":"#{t.username}","password":"#{t.password}","worker_last_update_at":"#{t.attributes_before_type_cast['worker_last_update_at'].gsub('-','/')}","disabled":#{t.disabled},"worker_status":"#{t.worker_status}","worker_job_target":"#{t.worker_job_target}","fetched_count":#{t.tickets.fetched.size},"unfetched_count":#{t.tickets.unfetched.size}})}.join(',') + ']'
+    
+    render :text => %[{"totalRecords":#{TmAccount.count(:all, :include => find_include, :conditions => find_conditions)},
+      "recordsReturned":#{@tm_accounts.size},
+      "startIndex":#{startIndex},
+      "sort":"#{sort}",
+      "dir":"#{dir}",
+      "records":#{tm_account_json}}]
   end
   
   def create

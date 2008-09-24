@@ -2,7 +2,7 @@
 YAHOO.util.Event.addListener(window, 'load', function () {  
   
   // Create the DataSource 
-  dataSource = new DS("/tickets/list?"); 
+  dataSource = new DS("/tickets/list?show_all=true&"); 
   dataSource.responseType = DS.TYPE_JSON; 
   dataSource.responseSchema = { 
       resultsList: "records", 
@@ -35,9 +35,6 @@ YAHOO.util.Event.addListener(window, 'load', function () {
 
 	
 	var formatters = {
-    togglecheckall: function(elCell, oRecord, oColumn, oData) { 
-      elCell.innerHTML = '<input type="checkbox" name="tickets[]" value="' + oRecord.getData('id') + '" />'
-    },
     openform: function(elCell, oRecord, oColumn, oData) { 
       elCell.innerHTML = '<a href="javascript:;" onclick="getTicketQueueForm(' + oRecord.getData('id') + ')">Edit</a>';
     },
@@ -68,7 +65,6 @@ YAHOO.util.Event.addListener(window, 'load', function () {
       {key:"email_sent_at", label:"Email Sent On", sortable:true, formatter:formatters.eventDate},
       {key:"email_from", label:"Email Sender", sortable:true}, 
       {key:"email_subject", label:"Email Subject", sortable:true}, 
-      {key:"togglecheckall", label:'<input type="checkbox" onchange="toggleChecked($(\'tickets_form\'), this)" />', formatter:formatters.togglecheckall},
       {key:"viewmore", label:"Edit", formatter:formatters.openform},
       {key:"viewpdf", label:"PDF", formatter:formatters.viewpdf},
       {key:"quickview", label:"Quickview", formatter:formatters.quickview}//,

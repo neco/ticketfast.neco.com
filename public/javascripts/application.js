@@ -42,7 +42,7 @@ var getTicketQueueForm = function(ticket_id) {
 var updateEventDates = function(custom, event_id) {
   new Ajax.Request(("/tickets/get_event_dates?" + (custom ? 'custom_opt=1&' : '') + (event_id ? 'event_id=' + event_id : '')), {
     method: 'post',
-    parameters: {event_name:$F('event_name'), event_id:$F('event-date-select')},
+    parameters: {event_name:$F('event_name'), event_id:$F('event-date-select'), show_all:$F('show_all'), viewed_only:$F('viewed_only')},
     onSuccess: function(transport) {
       eval(transport.responseText)
     }

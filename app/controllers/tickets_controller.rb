@@ -43,8 +43,9 @@ class TicketsController < ApplicationController
     end
     
     unless(params[:show_all] or params[:viewed_only]) 
-      find_conditions[0] += ' AND (viewed IS NULL OR viewed = ?)'    
+      find_conditions[0] += ' AND (viewed IS NULL OR viewed = ?) AND (events.occurs_at > ?)'    
       find_conditions << false
+      find_conditions << 1.day.ago
     end
     
     if(params[:viewed_only]) 
@@ -87,6 +88,7 @@ class TicketsController < ApplicationController
   
   def update
     @ticket = Ticket.find params[:ticket][:id]
+    params[:ticket].delete_if{|k,v| v.empty?}
     @ticket.update_attributes!(params[:ticket])
     if(params[:event_id] and params[:event_id] != '0')
       @ticket.event = Event.find(params[:event_id])
@@ -103,7 +105,8 @@ class TicketsController < ApplicationController
   end
   
   def get_event_dates
-    @events = Event.find_all_by_name(params[:event_name])
+    conditions = (params[:show_all].empty? and params[:viewed_only].empty?)  ? ['occurs_at > ?', 1.day.ago] : []
+    @events = Event.find_all_by_name(params[:event_name], :conditions => conditions)
     @event_id = params[:event_id]
     @custom = params[:custom_opt] # show 'custom' instead of 'view all'
     render :partial => 'event_dates' if request.xhr?
@@ -129,7 +132,7 @@ class TicketsController < ApplicationController
   
   def mark_new
     Ticket.find(params[:id]).unview!
-    render_text ""
+    render :text => 1
   end
 
   def edit_field
