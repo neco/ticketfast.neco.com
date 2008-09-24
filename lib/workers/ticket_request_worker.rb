@@ -44,7 +44,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
           # do not grab tickets purchased before 9/1/08
           cutoff_date = Date.new(2008,9,1)
     
-          logger.debug "working with #{tm_account_id}, #{client.username}:#{client.password}"
+          logger.debug "working with #{tm_acct.inspect}, #{client.username}:#{client.password}"
           logger.debug "client order data #{client.order_data.inspect}"
     
           # This loop grabs a page of order history, and gets rid of tickets we have already received
@@ -111,6 +111,8 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
                           :tm_event_name => order[:event_name],
                           :tm_venue_name => order[:venue_name],
                           :tm_event_date => Date.parse(order[:event_date]) unless Ticket.find_by_order_number(order[:order_number])
+            old_tick = Ticket.find_by_order_number(order[:order_number])
+            old_tick.update_attribute(:tm_account_id => tm_acct.id) if(old_tick)
           end
           
                     
