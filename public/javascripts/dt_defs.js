@@ -3,7 +3,7 @@ var DS = YAHOO.util.DataSource;
 
 var commonDT = {
   dataTable: null,
-  getQueryConditions: function(){alert('foo')},
+  getQueryConditions: function(){return ''},
   
   parseDate: function(data) {
     if(!data) return null; 
@@ -91,9 +91,30 @@ var commonDT = {
     })
   },
   
-  init: function(dt_container_id, dataSource, colDefs, gqc) {
-    this.dataSource = dataSource;
-    this.getQueryConditions = gqc;
+  reloadPS: function() {
+    commonDT.updateDataTable(commonDT.generateQueryString(), {})
+  },
+  
+  createDataSource: function(uri, fields) {
+    // Create the DataSource 
+    var dataSource = new DS(uri); 
+    dataSource.responseType = DS.TYPE_JSON; 
+    dataSource.responseSchema = { 
+        resultsList: "records", 
+        fields: fields, 
+        metaFields: { 
+            totalRecords: "totalRecords", 
+            paginationRecordOffset : "startIndex", 
+            sortKey: "sort", 
+            sortDir: "dir" 
+        } 
+    }
+    return dataSource;
+  },
+  
+  init: function(uri, opts) {
+    this.dataSource = this.createDataSource(uri, opts.dataSource_fields);
+    if(opts.getQueryConditions) this.getQueryConditions = opts.getQueryConditions;
     this.setupPaginator();
     
     var dtConf = { 
@@ -105,9 +126,9 @@ var commonDT = {
 
     // Instantiate DataTable 
     this.dataTable = new DT( 
-        dt_container_id,
-        colDefs,
-        dataSource,
+        opts.dataTable_container,
+        opts.colDefs,
+        this.dataSource,
         dtConf
     );
     

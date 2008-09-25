@@ -4,6 +4,39 @@ class TmAccountsController < ApplicationController
     @js_includes = ['dt_defs', 'tm_accounts_dt_defs']
   end
   
+  def unfetched
+    @js_includes = ['dt_defs', 'tm_accounts_tickets_dt_defs']
+  end
+  
+  # Action called by the YUI datatable
+  def dt_unfetched
+    results =  params[:results] || 5
+    startIndex = params[:startIndex] || 0
+    sort = params[:sort] || 'ticket.created_at'
+    order_by = sort.gsub(/^.*?\.?([^\.]+)\.([^\.]+)$/, '\1s.\2')
+    dir = params[:dir] || 'desc'
+    
+    find_include = :tm_account
+    
+    find_conditions = []
+        
+    @tickets = Ticket.unfetched.find :all,
+      :include => find_include, 
+      :conditions => find_conditions,
+      :offset => startIndex, 
+      :limit => results,
+      :order => "#{order_by} #{dir}"      
+      
+    ticket_json = '[' + @tickets.collect{|t| %({"id":#{t.id},"order_number":"#{t.order_number}","tm_order_date":"#{t.attributes_before_type_cast['tm_order_date'].gsub('-','/')}","tm_event_name":"#{t.tm_event_name.gsub('"','\\"') if t.tm_event_name}","tm_venue_name":"#{t.tm_venue_name.gsub('"','\\"') if t.tm_venue_name}","tm_event_date":"#{t.attributes_before_type_cast['tm_event_date'].gsub('-','/')}","unfetched_reason":"#{t.unfetched_reason.gsub('"','\\"').gsub("\n",' ') if t.unfetched_reason}","tm_account":{"username":"#{t.tm_account.username if t.tm_account}"}})}.join(',') + ']'
+    
+    render :text => %[{"totalRecords":#{Ticket.unfetched.count(:all, :include => find_include, :conditions => find_conditions)},
+      "recordsReturned":#{@tickets.size},
+      "startIndex":#{startIndex},
+      "sort":"#{sort}",
+      "dir":"#{dir}",
+      "records":#{ticket_json}}]
+  end
+  
   # Action called by the YUI datatable
   def list
     results =  params[:results] || 5
@@ -15,6 +48,7 @@ class TmAccountsController < ApplicationController
     find_include = {}
     
     find_conditions = []
+    find_conditions = ['tm_accounts.username like ?', "%#{params[:query]}%"] if params[:query]
         
     @tm_accounts = TmAccount.find :all,
       :include => find_include, 

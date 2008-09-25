@@ -2,38 +2,18 @@
 YAHOO.util.Event.addListener(window, 'load', function () {  
   
   // Create the DataSource 
-  dataSource = new DS("/tickets/list?show_all=true&"); 
-  dataSource.responseType = DS.TYPE_JSON; 
-  dataSource.responseSchema = { 
-      resultsList: "records", 
-      fields: [
+  var uri = "/tickets/list?show_all=true&"; 
+  var ds_fields = [
         "id",
         {key:"email_sent_at", parser: commonDT.parseDate},
         "email_from",
         "email_subject"
-      ], 
-      metaFields: { 
-          totalRecords: "totalRecords", 
-          paginationRecordOffset : "startIndex", 
-          sortKey: "sort", 
-          sortDir: "dir" 
-      } 
-  };
-  
+      ];
   
   var myGetQueryConditions = function() {
     return '&unparsed=1';
   }
-  
-  reloadPS = function() {
-    commonDT.updateDataTable(commonDT.generateQueryString(), {})
-  }
-  
-
-  
-
-
-	
+  	
 	var formatters = {
     openform: function(elCell, oRecord, oColumn, oData) { 
       elCell.innerHTML = '<a href="javascript:;" onclick="getTicketQueueForm(' + oRecord.getData('id') + ')">Edit</a>';
@@ -73,8 +53,14 @@ YAHOO.util.Event.addListener(window, 'load', function () {
       
   ]; 
   
-  commonDT.init('dt-container', dataSource, colDefs, myGetQueryConditions);
-  
+  var opts = {
+    dataSource_fields: ds_fields,
+    colDefs: colDefs,
+    dataTable_container: 'dt-container',
+    getQueryConditions: myGetQueryConditions
+  }
+  var dataTable = commonDT.init(uri, opts)
+    
   // Set up editing 
   var highlightEditableCell = function(oArgs) { 
     var elCell = oArgs.target.firstChild; 
@@ -84,11 +70,11 @@ YAHOO.util.Event.addListener(window, 'load', function () {
       this.highlightCell(elCell); 
     }
   }; 
-  commonDT.dataTable.subscribe("cellMouseoverEvent", highlightEditableCell); 
-  commonDT.dataTable.subscribe("cellMouseoutEvent", commonDT.dataTable.onEventUnhighlightCell); 
-  commonDT.dataTable.subscribe("cellClickEvent", commonDT.dataTable.onEventShowCellEditor); 
+  dataTable.subscribe("cellMouseoverEvent", highlightEditableCell); 
+  dataTable.subscribe("cellMouseoutEvent", commonDT.dataTable.onEventUnhighlightCell); 
+  dataTable.subscribe("cellClickEvent", commonDT.dataTable.onEventShowCellEditor); 
 
-  commonDT.dataTable.subscribe("editorBlurEvent", function(oArgs) { 
+  dataTable.subscribe("editorBlurEvent", function(oArgs) { 
     this.cancelCellEditor(); 
   });
   // done with editing

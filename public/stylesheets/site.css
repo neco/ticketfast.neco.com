@@ -1,6 +1,10 @@
 a { color: #222; }
 a:hover { color: #666; }
 
+.float-left { float: left;}
+.float-right { float: right;}
+.clear { clear: both;}
+
 #adv_search_div td { padding:3px; }
 #queue-form td { padding: 3px;}
 #queue-form td.label { padding-left:15px;}

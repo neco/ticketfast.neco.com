@@ -1,5 +1,5 @@
 #queue-form
-  - remote_form_for :ticket, @ticket, :url => {:action => 'update'}, :complete => "eventNameAutoCompleteLoaded=false;$('queue-form').remove();reloadPS()" do |f|
+  - remote_form_for :ticket, @ticket, :url => {:action => 'update'}, :complete => "eventNameAutoCompleteLoaded=false;$('queue-form').remove();commonDT.reloadPS()" do |f|
     = f.hidden_field :id
     %table
       %tr

@@ -2,11 +2,8 @@
 YAHOO.util.Event.addListener(window, 'load', function () {  
   
   // Create the DataSource 
-  dataSource = new DS("/tickets/list?"); 
-  dataSource.responseType = DS.TYPE_JSON; 
-  dataSource.responseSchema = { 
-      resultsList: "records", 
-      fields: [
+  var uri = "/tickets/list?"; 
+  var ds_fields = [
         "id",
         "event_id",
         "event.venue_id",
@@ -16,18 +13,10 @@ YAHOO.util.Event.addListener(window, 'load', function () {
         "section",
         "row",
         "seat"
-      ], 
-      metaFields: { 
-          totalRecords: "totalRecords", 
-          paginationRecordOffset : "startIndex", 
-          sortKey: "sort", 
-          sortDir: "dir" 
-      } 
-  };
+      ];
   
   
   var myGetQueryConditions = function() {
-    
     var q_str = '';
     for(var i in query_by_fields) {
       if(search_conditions[query_by_fields[i]])
@@ -57,21 +46,9 @@ YAHOO.util.Event.addListener(window, 'load', function () {
     for(var i in query_by_fields) {
       search_conditions[query_by_fields[i]] = $('query-' + query_by_fields[i]) ? $F('query-' + query_by_fields[i]) : null;
     }
-    reloadPS()
+    commonDT.reloadPS()
   }
-  
-  
 
-  
-  reloadPS = function() {
-    commonDT.updateDataTable(commonDT.generateQueryString(), {})
-  }
-  
-
-  
-
-
-	
 	var formatters = {
     togglecheckall: function(elCell, oRecord, oColumn, oData) { 
       elCell.innerHTML = '<input type="checkbox" name="tickets[]" value="' + oRecord.getData('id') + '" />'
@@ -110,5 +87,11 @@ YAHOO.util.Event.addListener(window, 'load', function () {
       
   ]; 
   
-  commonDT.init('dt-container', dataSource, colDefs, myGetQueryConditions);
+  var opts = {
+    dataSource_fields: ds_fields,
+    colDefs: colDefs,
+    dataTable_container: 'dt-container',
+    getQueryConditions: myGetQueryConditions
+  }
+  var dataTable = commonDT.init(uri, opts)
 })
