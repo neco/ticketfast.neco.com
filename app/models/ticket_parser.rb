@@ -232,7 +232,7 @@ private
     end
   end
   
-  def oiler
+  def parse_oiler
     ticket_data = pdf_text.match(/SECTION ORDER #\n\n([^\n\s]+)\n\nROW\n\n([^\n\s]+)\n\nSEAT\n\n([^\n\s]+) ([0-9]{4} [0-9]{4} [0-9]{4}).*?([-0-9]+).*?CA[^\n]+\n\n[^\n]+\n\n[^\n]+\n\n[^\n]+\n\n([^\n\s]+)\n\n([^\n]+?Oilers[^\n]+)/im)
     
     if ticket_data
