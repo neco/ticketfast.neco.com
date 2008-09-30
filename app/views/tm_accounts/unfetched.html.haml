@@ -1,6 +1,36 @@
 = link_to "back to Ticketmaster Accounts", :action => 'index'
 .spacer
 .spacer
+
+%form{:onsubmit => 'performSearch();updateTMEventDates();return false'}
+  Event 
+  = text_field_with_auto_complete :ticket, :tm_event_name
+
+  Event date
+  %select#event-date-select{:name => 'event_date', :onchange => 'performSearch();'}
+    %option{:value => 0} -- View all
+
+  #adv_search_div{:style => "padding-top:10px;"}
+    %table
+      %tr
+        %td{:align => 'right'} Username
+        %td
+          = text_field_with_auto_complete :tm_account, :username      
+        %td{:align => 'right'} Venue name
+        %td
+          = text_field_with_auto_complete :ticket, :tm_venue_name
+      %tr
+        %td{:align => 'right'} Order #
+        %td{:colspan => 3}
+          %input{:type => 'text', :id => 'order_number'}/
+  
+
+
+  %br/
+  %input{:type => 'submit', :value => 'Search'}/
+
+.spacer
+
 .yui-skin-sam
   #dt-container
   #dt-paging

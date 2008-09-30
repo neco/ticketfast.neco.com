@@ -24,7 +24,7 @@ class TicketParser
   
   def parse!
     parsed_data = nil
-    %w(default default_alt mlb_2008 telecharge).each do |format|
+    %w(default default_alt mlb_2008 telecharge mlb_2009).each do |format|
       parsed_data = send('parse_' + format)
       if parsed?
         self.ticket_format = format
@@ -204,6 +204,21 @@ private
   
   def parse_mlb_2008
     ticket_data = pdf_text.match(/([0-9]{4} ?[0-9]{4} ?[0-9]{4} ?[0-9]{4}).*?This.*?SECTION\n(.*?)\n.*?ROW\n(.*?)\n.*?SEAT\n(.*?)\n.*?NO REENTRY\.\n\nEVENT\n(.*?)\n.*?Name: (.*?) Confirmation Number: ([^ ]* [^ ]*).*?Event Information:.*?\n([a-z0-9]+)/im)
+    if ticket_data
+      self.parsed_ticket = {:purchaser => ticket_data[6],
+                     :order_number => ticket_data[7],
+                     :section => ticket_data[2],
+                     :row => ticket_data[3],
+                     :seat => ticket_data[4],
+                     :barcode_number => ticket_data[1].gsub(/ /, ''),
+                     :viewed => false,
+                     :event_text => ticket_data[5]}
+      self.parsed_event = { :code => ticket_data[8] }
+    end
+  end
+  
+  def parse_mlb_2009
+    ticket_data = pdf_text.match(/([0-9]{4} ?[0-9]{4} ?[0-9]{4} ?[0-9]{4}).*?2009 Season Tickets.*?SECTION\n(.*?)\n.*?ROW\n(.*?)\n.*?SEAT\n(.*?)\n.*?face value of this ticket to the holder\.\n\nEVENT\n(.*?)\n.*?Name: (.*?) Confirmation Number: ([^ ]* [^ ]*).*?Event Information:.*?\n([a-z0-9]+)/im)
     if ticket_data
       self.parsed_ticket = {:purchaser => ticket_data[6],
                      :order_number => ticket_data[7],

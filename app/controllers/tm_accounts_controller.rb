@@ -1,11 +1,47 @@
 class TmAccountsController < ApplicationController
+  auto_complete_for :tm_account, :username, :select => 'distinct username'
+  
+  def auto_complete_for_ticket_tm_event_name
+    find_options = { 
+      :conditions => [ "tm_event_name LIKE ?", '%' + params[:ticket][:tm_event_name].downcase + '%' ], 
+      :order => "tm_event_name ASC",
+      :limit => 10,
+      :select => 'distinct tm_event_name' }
+
+    @items = Ticket.unfetched.find(:all, find_options)
+
+    render :inline => "<%= auto_complete_result @items, 'tm_event_name' %>"
+  end
+  
+  def auto_complete_for_ticket_tm_venue_name
+    find_options = { 
+      :conditions => [ "tm_venue_name LIKE ?", '%' + params[:ticket][:tm_venue_name].downcase + '%' ], 
+      :order => "tm_venue_name ASC",
+      :limit => 10,
+      :select => 'distinct tm_venue_name' }
+
+    @items = Ticket.unfetched.find(:all, find_options)
+
+    render :inline => "<%= auto_complete_result @items, 'tm_venue_name' %>"
+  end
+  
   def index
     @tm_accounts = TmAccount.find :all
     @js_includes = ['dt_defs', 'tm_accounts_dt_defs']
   end
   
+  def archive_unfetched
+    Ticket.find(params[:id]).update_attribute(:archived, true)
+    redirect_to :action => 'unfetched'
+  end
+  
   def unfetched
     @js_includes = ['dt_defs', 'tm_accounts_tickets_dt_defs']
+  end
+  
+  def get_event_dates
+    @dates = Ticket.unfetched.find_all_by_tm_event_name(params[:tm_event_name], :order => 'tm_event_date').collect{|t| t.tm_event_date}.uniq!
+    render :partial => 'tm_event_dates' if request.xhr?
   end
   
   # Action called by the YUI datatable
@@ -18,8 +54,26 @@ class TmAccountsController < ApplicationController
     
     find_include = :tm_account
     
-    find_conditions = []
-        
+    find_conditions = ['1=1']
+
+    if(params[:tm_event_name] and !params[:tm_event_name].blank?)
+      find_conditions[0] += ' AND tm_event_name = ?'
+      find_conditions << params[:tm_event_name].strip
+    end
+    if(params[:tm_venue_name] and !params[:tm_venue_name].blank?)
+      find_conditions[0] += ' AND tm_venue_name = ?'
+      find_conditions << params[:tm_venue_name].strip
+    end
+    if(params[:username] and !params[:username].blank?)
+      find_conditions[0] += ' AND tm_accounts.username = ?'
+      find_conditions << params[:username].strip
+    end
+    if(params[:event_date] and params[:event_date] != '0')
+      find_conditions[0] += ' AND tm_event_date = ?'
+      find_conditions << Date.parse(params[:event_date])
+    end
+    
+    
     @tickets = Ticket.unfetched.find :all,
       :include => find_include, 
       :conditions => find_conditions,

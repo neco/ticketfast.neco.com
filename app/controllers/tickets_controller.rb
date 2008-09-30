@@ -152,7 +152,7 @@ class TicketsController < ApplicationController
   
   def view_text
     @ticket = Ticket.find params[:id]
-    out_path = "#{RAILS_ROOT}/tmp/#{@ticket.id}_text}"
+    out_path = "#{RAILS_ROOT}/tmp/#{@ticket.id}_text"
     `pdftotext #{@ticket.pdf_filepath} #{out_path}`
     pdf_text = File.read(out_path)
     `rm -f #{out_path}`

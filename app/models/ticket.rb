@@ -4,9 +4,9 @@ class Ticket < ActiveRecord::Base
   has_many :ticket_actions, :order => "created_at DESC"
   belongs_to :tm_account
   
-  named_scope :unparsed, :conditions => {:unparsed => true}
-  named_scope :unfetched, :conditions => {:unfetched => true}
-  named_scope :fetched, :conditions => {:unfetched => false}
+  named_scope :unparsed, :conditions => {:unparsed => true, :archived => false}
+  named_scope :unfetched, :conditions => {:unfetched => true, :archived => false}
+  named_scope :fetched, :conditions => {:unfetched => false, :archived => false}
   
   def before_destroy
     `rm #{RAILS_ROOT}/#{Setting['pdf_dir']}/#{id}.pdf`
