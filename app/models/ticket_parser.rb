@@ -24,7 +24,7 @@ class TicketParser
   
   def parse!
     parsed_data = nil
-    %w(default default_alt mlb_2008 telecharge mlb_2009).each do |format|
+    %w(default default_alt mlb_2008 telecharge mlb_2009 oiler).each do |format|
       parsed_data = send('parse_' + format)
       if parsed?
         self.ticket_format = format
@@ -229,6 +229,22 @@ private
                      :viewed => false,
                      :event_text => ticket_data[5]}
       self.parsed_event = { :code => ticket_data[8] }
+    end
+  end
+  
+  def oiler
+    ticket_data = pdf_text.match(/SECTION ORDER #\n\n([^\n\s]+)\n\nROW\n\n([^\n\s]+)\n\nSEAT\n\n([^\n\s]+) ([0-9]{4} [0-9]{4} [0-9]{4}).*?([-0-9]+).*?CA[^\n]+\n\n[^\n]+\n\n[^\n]+\n\n[^\n]+\n\n([^\n\s]+)\n\n([^\n]+?Oilers[^\n]+)/im)
+    
+    if ticket_data
+      self.parsed_ticket = {:order_number => ticket_data[5],
+                     :section => ticket_data[1],
+                     :row => ticket_data[2],
+                     :seat => ticket_data[3],
+                     :barcode_number => ticket_data[4].gsub(/ /, ''),
+                     :viewed => false,
+                     :event_text => ticket_data[7]}
+      self.parsed_event = { :code => ticket_data[6] }
+      self.parsed_venue_code = 'REX'
     end
   end
 end
