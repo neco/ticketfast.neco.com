@@ -71,6 +71,10 @@ class IncomingMailHandler < ActionMailer::Base
         ticket = ticket_parser.saved_ticket
         ticket.update_attributes(email_attrs)
         puts ticket.inspect
+        if(ticket.errors.size > 0)
+          puts "we have errors"
+          ticket.errors.collect{|f,e| puts "#{f} #{e}" }
+        end
         # Place the PDF ticket in the right place and clean up temporary pdftotext output file
         `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
         ticket_count += 1
