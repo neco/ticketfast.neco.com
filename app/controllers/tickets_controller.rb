@@ -10,6 +10,7 @@ class TicketsController < ApplicationController
     results =  params[:results] || 5
     startIndex = params[:startIndex] || 0
     sort = params[:sort] || 'none'
+    sort = 'ticket.id' if sort == 'id'
     order_by = sort != 'none' ? sort.gsub(/^.*?\.?([^\.]+)\.([^\.]+)$/, '\1s.\2') : 'tickets.section, tickets.row, tickets.seat'
     dir = params[:dir] || 'asc'
     
