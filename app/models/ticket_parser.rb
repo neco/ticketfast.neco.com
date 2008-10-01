@@ -42,19 +42,22 @@ class TicketParser
   end
   
   def update_from_parse!(tic)
-    event = Event.find_all_by_code(parsed_event[:code])
+    event = nil
+    if parsed_event[:code]
+      event = Event.find_all_by_code(parsed_event[:code])
     
-    # Create event if the event code does not exist yet
-    if event.size == 0 and parsed_event[:code]
-      event = Event.create(parsed_event)
-      self.created_event = event
-    else
-      event = event.first
+      # Create event if the event code does not exist yet
+      if event.size == 0 and parsed_event[:code]
+        event = Event.create(parsed_event)
+        self.created_event = event
+      else
+        event = event.first
+      end
     end
     
     self.parsed_ticket[:event_id] = event.id if event
     self.saved_ticket = tic
-    saved_ticket.update_attributes(parsed_ticket.merge({:unparsed => false}))
+    saved_ticket.update_attributes(parsed_ticket.merge({:unparsed => (event ? false : true)}))
     
     event.set_venue!(parsed_venue_code) if event and !event.venue
     saved_ticket.save
