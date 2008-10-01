@@ -177,6 +177,7 @@ class TMClient
       debug "Sending fetch_request call to job_queue_worker DONE THIS: #{count}"
       
       FetcherJob.register_client_done(username) if count > 1
+      raise "Tried 5 times and couldn't get a client to do the work, will try again later." if count >= 5
       
       if count > 1 and logged_in?
         debug "Dispatching a new client, logging in again then repeating request"
