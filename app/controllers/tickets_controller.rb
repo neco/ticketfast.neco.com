@@ -1,3 +1,4 @@
+require 'chronic'
 class TicketsController < ApplicationController
   auto_complete_for :event, :name, :select => 'distinct name'
   
@@ -97,7 +98,7 @@ class TicketsController < ApplicationController
       @ticket.event = Event.find(params[:event_id])
     elsif(params[:event][:name])
       @ticket.event = Event.new(params[:event])
-      @ticket.event.occurs_at = Date.parse(params[:event_date_text])
+      @ticket.event.occurs_at = Chronic.parse(params[:event_date_text])
     end
     if(@ticket.event)
       @ticket.unparsed = false
