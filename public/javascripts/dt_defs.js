@@ -133,7 +133,7 @@ var commonDT = {
     );
     
     this.dataTable.sortColumn = this.handleSorting;
-    
+    return this.dataTable;
   }
   
 }

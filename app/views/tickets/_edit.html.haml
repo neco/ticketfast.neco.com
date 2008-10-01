@@ -1,6 +1,8 @@
 #queue-form
   - remote_form_for :ticket, @ticket, :url => {:action => 'update'}, :complete => "eventNameAutoCompleteLoaded=false;$('queue-form').remove();commonDT.reloadPS()" do |f|
     = f.hidden_field :id
+    %input#show_all{:type => 'hidden', :value => 1}
+    %input#viewed_only{:type => 'hidden'}
     %table
       %tr
         %td.label{:align => "right"} ID:
