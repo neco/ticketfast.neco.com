@@ -1,4 +1,4 @@
 $('event-date-select').update('<option value="0">-- View all</option><%= 
 @dates.collect{|date|date_str = date.strftime("%m/%d/%Y");
   "<option value=\"#{date_str}\">#{date_str}</option>"
-}.join %>')
+}.join if @dates %>')
