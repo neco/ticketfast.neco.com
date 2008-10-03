@@ -111,7 +111,7 @@ class TmAccountsController < ApplicationController
       :limit => results,
       :order => "#{order_by} #{dir}"      
       
-    tm_account_json = '[' + @tm_accounts.collect{|t| %({"id":#{t.id},"username":"#{t.username}","password":"#{t.password}","worker_last_update_at":"#{t.attributes_before_type_cast['worker_last_update_at'].gsub('-','/')}","disabled":#{t.disabled},"worker_status":"#{t.worker_status}","worker_job_target":"#{t.worker_job_target}","fetched_count":#{t.tickets.fetched.size},"unfetched_count":#{t.tickets.unfetched.size}})}.join(',') + ']'
+    tm_account_json = '[' + @tm_accounts.collect{|t| %({"id":#{t.id},"username":"#{t.username}","password":"#{t.password}","worker_last_update_at":"#{t.attributes_before_type_cast['worker_last_update_at'].gsub('-','/') if t.attributes_before_type_cast['worker_last_update_at']}","disabled":#{t.disabled},"worker_status":"#{t.worker_status}","worker_job_target":"#{t.worker_job_target}","fetched_count":#{t.tickets.fetched.size},"unfetched_count":#{t.tickets.unfetched.size}})}.join(',') + ']'
     
     render :text => %[{"totalRecords":#{TmAccount.count(:all, :include => find_include, :conditions => find_conditions)},
       "recordsReturned":#{@tm_accounts.size},
