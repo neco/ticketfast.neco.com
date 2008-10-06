@@ -8,7 +8,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
 
   def save_unseen_tickets(tm_account_id = nil)
     first_run = true
-    while TmAccount.queued.size > 0
+    while first_run || TmAccount.queued.size > 0
       @clients = {}
       if first_run 
         if tm_account_id
