@@ -132,7 +132,11 @@ class TmAccountsController < ApplicationController
   end
   
   def manual_fetch
-    MiddleMan.worker(:ticket_request_worker).async_save_unseen_tickets(:arg => params[:id])
+    if FetcherJob.count > 0
+      TmAccount.find(params[:id]).update_attribute(:worker_status, 'queued')
+    else
+      MiddleMan.worker(:ticket_request_worker).async_save_unseen_tickets(:arg => params[:id])
+    end
     redirect_to :action => 'index'
   end
   
