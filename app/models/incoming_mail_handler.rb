@@ -11,7 +11,7 @@ class IncomingMailHandler < ActionMailer::Base
     email.parts.each do |part|
       next unless part.content_type == 'message/rfc822'
       IncomingMailHandler.receive part.body
-    end    
+    end
     
     email.attachments.each do |attachment|
       puts "dealing with attachment" 

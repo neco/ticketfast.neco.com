@@ -122,15 +122,17 @@ class TMClient
       return
     end
     
-    if(!doc.at("//div[@class='button']"))
+    view_and_print = doc.search("//div[@class='button']").reject{|f| f.inner_text !~ /View/}
+    
+    if(view_and_print.size == 0)
       raise doc.at("//div[@class='messageText']").innerHTML
     end
 
-    if(!doc.at("//div[@class='button']"))
-      File.open("#{RAILS_ROOT}/tmp/bad_fetch_ticket",'w'){|f|f.write src}
-    end
+    #if(!doc.at("//div[@class='button']"))
+    #  File.open("#{RAILS_ROOT}/tmp/bad_fetch_ticket",'w'){|f|f.write src}
+    #end
     
-    uri = 'https://www.ticketmaster.com' + doc.at("//div[@class='button']")['onclick'].gsub(/^.*?\('(.*)'\)$/, '\1')
+    uri = 'https://www.ticketmaster.com' + view_and_print.first['onclick'].gsub(/^.*?\('(.*)'\)$/, '\1')
         
     debug "* Found order, loading tickets download window"
     self.src = fetch_request(uri)
