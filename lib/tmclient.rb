@@ -125,7 +125,7 @@ class TMClient
     view_and_print = doc.search("//div[@class='button']").reject{|f| f.inner_text !~ /View/}
     
     if(view_and_print.size == 0)
-      raise doc.at("//div[@class='messageText']").innerHTML
+      raise(doc.at("//div[@class='messageText']") ? doc.at("//div[@class='messageText']").innerHTML : 'Pick up your tickets at a participating retail location near you.')
     end
 
     #if(!doc.at("//div[@class='button']"))
