@@ -1,7 +1,7 @@
 default_run_options[:pty] = true
 
 set :application, "ticketfast.neco.com"
-set :repository,  "git@github.com:binarylogic/ticketfast.neco.com.git"
+set :repository,  "git@github.com:neco/ticketfast.neco.com.git"
 set :keep_releases, 5
 
 set :scm, :git
