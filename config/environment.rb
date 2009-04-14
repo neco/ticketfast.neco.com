@@ -42,6 +42,9 @@ Rails::Initializer.run do |config|
   config.action_controller.session = { :session_key => "_ticketfast_session", :secret => "ticketsarefunandtheyarefastandireallylikethemfast" }
 end
 
+require "newrelic_rpm"
+
+
 # Add new inflection rules using the following format 
 # (all these examples are active by default):
 # Inflector.inflections do |inflect|
