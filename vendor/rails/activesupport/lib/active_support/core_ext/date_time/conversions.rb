@@ -3,16 +3,21 @@ module ActiveSupport #:nodoc:
     module DateTime #:nodoc:
       # Converting datetimes to formatted strings, dates, and times.
       module Conversions
-        def self.included(base) #:nodoc:
+        def self.append_features(base) #:nodoc:
           base.class_eval do
-            alias_method :to_default_s, :to_s if instance_methods.include?(:to_s)
-            alias_method :to_s, :to_formatted_s
             alias_method :default_inspect, :inspect
-            alias_method :inspect, :readable_inspect
+            alias_method :to_default_s, :to_s unless (instance_methods(false) & [:to_s, 'to_s']).empty?
 
             # Ruby 1.9 has DateTime#to_time which internally relies on Time. We define our own #to_time which allows
             # DateTimes outside the range of what can be created with Time.
             remove_method :to_time if instance_methods.include?(:to_time)
+          end
+
+          super
+
+          base.class_eval do
+            alias_method :to_s, :to_formatted_s
+            alias_method :inspect, :readable_inspect
           end
         end
 
@@ -20,7 +25,7 @@ module ActiveSupport #:nodoc:
         # 
         # This method is aliased to <tt>to_s</tt>.
         # 
-        # === Examples:
+        # === Examples
         #   datetime = DateTime.civil(2007, 12, 4, 0, 0, 0, 0)   # => Tue, 04 Dec 2007 00:00:00 +0000
         # 
         #   datetime.to_formatted_s(:db)            # => "2007-12-04 00:00:00"

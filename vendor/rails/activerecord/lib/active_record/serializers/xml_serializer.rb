@@ -2,7 +2,7 @@ module ActiveRecord #:nodoc:
   module Serialization
     # Builds an XML document to represent the model. Some configuration is
     # available through +options+. However more complicated cases should
-    # override ActiveRecord's to_xml method.
+    # override ActiveRecord::Base#to_xml.
     #
     # By default the generated XML document will include the processing
     # instruction and all the object's attributes. For example:
@@ -22,12 +22,13 @@ module ActiveRecord #:nodoc:
     #     <last-read type="date">2004-04-15</last-read>
     #   </topic>
     #
-    # This behavior can be controlled with :only, :except,
-    # :skip_instruct, :skip_types and :dasherize. The :only and
-    # :except options are the same as for the #attributes method.
-    # The default is to dasherize all column names, to disable this,
-    # set :dasherize to false. To not have the column type included
-    # in the XML output, set :skip_types to true.
+    # This behavior can be controlled with <tt>:only</tt>, <tt>:except</tt>,
+    # <tt>:skip_instruct</tt>, <tt>:skip_types</tt>, <tt>:dasherize</tt> and <tt>:camelize</tt> .
+    # The <tt>:only</tt> and <tt>:except</tt> options are the same as for the
+    # +attributes+ method. The default is to dasherize all column names, but you
+    # can disable this setting <tt>:dasherize</tt> to +false+. Setting <tt>:camelize</tt>
+    # to +true+ will camelize all column names - this also overrides <tt>:dasherize</tt>.
+    # To not have the column type included in the XML output set <tt>:skip_types</tt> to +true+.
     #
     # For instance:
     #
@@ -43,7 +44,7 @@ module ActiveRecord #:nodoc:
     #     <last-read type="date">2004-04-15</last-read>
     #   </topic>
     #
-    # To include first level associations use :include
+    # To include first level associations use <tt>:include</tt>:
     #
     #   firm.to_xml :include => [ :account, :clients ]
     #
@@ -98,7 +99,7 @@ module ActiveRecord #:nodoc:
     #     </account>
     #   </firm>
     #
-    # To include any methods on the object(s) being called use :methods
+    # To include any methods on the model being called use <tt>:methods</tt>:
     #
     #   firm.to_xml :methods => [ :calculated_earnings, :real_earnings ]
     #
@@ -108,9 +109,8 @@ module ActiveRecord #:nodoc:
     #     <real-earnings>5</real-earnings>
     #   </firm>
     #
-    # To call any Procs on the object(s) use :procs. The Procs
-    # are passed a modified version of the options hash that was
-    # given to #to_xml.
+    # To call any additional Procs use <tt>:procs</tt>. The Procs are passed a
+    # modified version of the options hash that was given to +to_xml+:
     #
     #   proc = Proc.new { |options| options[:builder].tag!('abc', 'def') }
     #   firm.to_xml :procs => [ proc ]
@@ -120,7 +120,7 @@ module ActiveRecord #:nodoc:
     #     <abc>def</abc>
     #   </firm>
     #
-    # Alternatively, you can yield the builder object as part of the to_xml call:
+    # Alternatively, you can yield the builder object as part of the +to_xml+ call:
     #
     #   firm.to_xml do |xml|
     #     xml.creator do
@@ -137,8 +137,9 @@ module ActiveRecord #:nodoc:
     #     </creator>
     #   </firm>
     #
-    # You can override the to_xml method in your ActiveRecord::Base
-    # subclasses if you need to. The general form of doing this is:
+    # As noted above, you may override +to_xml+ in your ActiveRecord::Base
+    # subclasses to have complete control about what's generated. The general
+    # form of doing this is:
     #
     #   class IHaveMyOwnXML < ActiveRecord::Base
     #     def to_xml(options = {})
@@ -178,11 +179,20 @@ module ActiveRecord #:nodoc:
 
     def root
       root = (options[:root] || @record.class.to_s.underscore).to_s
-      dasherize? ? root.dasherize : root
+      reformat_name(root)
     end
 
     def dasherize?
       !options.has_key?(:dasherize) || options[:dasherize]
+    end
+
+    def camelize?
+      options.has_key?(:camelize) && options[:camelize]
+    end
+
+    def reformat_name(name)
+      name = name.camelize if camelize?
+      dasherize? ? name.dasherize : name
     end
 
     def serializable_attributes
@@ -212,7 +222,7 @@ module ActiveRecord #:nodoc:
 
     def add_tag(attribute)
       builder.tag!(
-        dasherize? ? attribute.name.dasherize : attribute.name,
+        reformat_name(attribute.name),
         attribute.value.to_s,
         attribute.decorations(!options[:skip_types])
       )
@@ -220,18 +230,23 @@ module ActiveRecord #:nodoc:
 
     def add_associations(association, records, opts)
       if records.is_a?(Enumerable)
-        tag = association.to_s
-        tag = tag.dasherize if dasherize?
+        tag = reformat_name(association.to_s)
+        type = options[:skip_types] ? {} : {:type => "array"}
+
         if records.empty?
-          builder.tag!(tag, :type => :array)
+          builder.tag!(tag, type)
         else
-          builder.tag!(tag, :type => :array) do
+          builder.tag!(tag, type) do
             association_name = association.to_s.singularize
             records.each do |record|
-              record.to_xml opts.merge(
-                :root => association_name,
-                :type => (record.class.to_s.underscore == association_name ? nil : record.class.name)
-              )
+              if options[:skip_types]
+                record_type = {}
+              else
+                record_class = (record.class.to_s.underscore == association_name) ? nil : record.class.name
+                record_type = {:type => record_class}
+              end
+
+              record.to_xml opts.merge(:root => association_name).merge(record_type)
             end
           end
         end
@@ -273,14 +288,14 @@ module ActiveRecord #:nodoc:
       end
 
       # There is a significant speed improvement if the value
-      # does not need to be escaped, as #tag! escapes all values
+      # does not need to be escaped, as <tt>tag!</tt> escapes all values
       # to ensure that valid XML is generated. For known binary
       # values, it is at least an order of magnitude faster to
       # Base64 encode binary values and directly put them in the
       # output XML than to pass the original value or the Base64
-      # encoded value to the #tag! method. It definitely makes
+      # encoded value to the <tt>tag!</tt> method. It definitely makes
       # no sense to Base64 encode the value and then give it to
-      # #tag!, since that just adds additional overhead.
+      # <tt>tag!</tt>, since that just adds additional overhead.
       def needs_encoding?
         ![ :binary, :date, :datetime, :boolean, :float, :integer ].include?(type)
       end

@@ -34,6 +34,8 @@ Rails::Initializer.run do |config|
 
   # Activate observers that should always be running
   # config.active_record.observers = :cacher, :garbage_collector
+  
+  config.gem "newrelic_rpm"
 
   # Make Active Record use UTC-base instead of local time
   # config.active_record.default_timezone = :utc
@@ -41,8 +43,6 @@ Rails::Initializer.run do |config|
   # See Rails::Configuration for more options
   config.action_controller.session = { :session_key => "_ticketfast_session", :secret => "ticketsarefunandtheyarefastandireallylikethemfast" }
 end
-
-require "newrelic_rpm"
 
 
 # Add new inflection rules using the following format 

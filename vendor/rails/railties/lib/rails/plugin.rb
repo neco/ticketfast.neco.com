@@ -1,14 +1,14 @@
 module Rails
   # The Plugin class should be an object which provides the following methods:
   #
-  # * +name+       - used during initialisation to order the plugin (based on name and
-  #                  the contents of <tt>config.plugins</tt>)
-  # * +valid?+     - returns true if this plugin can be loaded
-  # * +load_paths+ - each path within the returned array will be added to the $LOAD_PATH
-  # * +load+       - finally 'load' the plugin.
+  # * +name+       - Used during initialisation to order the plugin (based on name and
+  #                  the contents of <tt>config.plugins</tt>).
+  # * +valid?+     - Returns true if this plugin can be loaded.
+  # * +load_paths+ - Each path within the returned array will be added to the <tt>$LOAD_PATH</tt>.
+  # * +load+       - Finally 'load' the plugin.
   #
   # These methods are expected by the Rails::Plugin::Locator and Rails::Plugin::Loader classes.
-  # The default implementation returns the <tt>lib</tt> directory as its </tt>load_paths</tt>, 
+  # The default implementation returns the <tt>lib</tt> directory as its <tt>load_paths</tt>, 
   # and evaluates <tt>init.rb</tt> when <tt>load</tt> is called.
   #
   # You can also inspect the about.yml data programmatically:
@@ -28,16 +28,20 @@ module Rails
     end
     
     def valid?
-      File.directory?(directory) && (has_lib_directory? || has_init_file?)
+      File.directory?(directory) && (has_app_directory? || has_lib_directory? || has_init_file?)
     end
   
-    # Returns a list of paths this plugin wishes to make available in $LOAD_PATH
+    # Returns a list of paths this plugin wishes to make available in <tt>$LOAD_PATH</tt>.
     def load_paths
       report_nonexistant_or_empty_plugin! unless valid?
-      has_lib_directory? ? [lib_path] : []
+      
+      returning [] do |load_paths|
+        load_paths << lib_path  if has_lib_directory?
+        load_paths << app_paths if has_app_directory?
+      end.flatten
     end
-
-    # Evaluates a plugin's init.rb file
+    
+    # Evaluates a plugin's init.rb file.
     def load(initializer)
       return if loaded?
       report_nonexistant_or_empty_plugin! unless valid?
@@ -56,7 +60,35 @@ module Rails
     def about
       @about ||= load_about_information
     end
+
+    # Engines are plugins with an app/ directory.
+    def engine?
+      has_app_directory?
+    end
     
+    # Returns true if the engine ships with a routing file
+    def routed?
+      File.exist?(routing_file)
+    end
+
+
+    def view_path
+      File.join(directory, 'app', 'views')
+    end
+
+    def controller_path
+      File.join(directory, 'app', 'controllers')
+    end
+
+    def metal_path
+      File.join(directory, 'app', 'metal')
+    end
+
+    def routing_file
+      File.join(directory, 'config', 'routes.rb')
+    end
+    
+
     private
       def load_about_information
         about_yml_path = File.join(@directory, "about.yml")
@@ -68,14 +100,32 @@ module Rails
 
       def report_nonexistant_or_empty_plugin!
         raise LoadError, "Can not find the plugin named: #{name}"
-      end      
-    
+      end
+
+      
+      def app_paths
+        [ File.join(directory, 'app', 'models'), File.join(directory, 'app', 'helpers'), controller_path, metal_path ]
+      end
+      
       def lib_path
         File.join(directory, 'lib')
       end
 
-      def init_path
+      def classic_init_path
         File.join(directory, 'init.rb')
+      end
+
+      def gem_init_path
+        File.join(directory, 'rails', 'init.rb')
+      end
+
+      def init_path
+        File.file?(gem_init_path) ? gem_init_path : classic_init_path
+      end
+
+
+      def has_app_directory?
+        File.directory?(File.join(directory, 'app'))
       end
 
       def has_lib_directory?
@@ -86,35 +136,32 @@ module Rails
         File.file?(init_path)
       end
 
+
       def evaluate_init_rb(initializer)
-         if has_init_file?
-           silence_warnings do
-             # Allow plugins to reference the current configuration object
-             config = initializer.configuration
-             
-             eval(IO.read(init_path), binding, init_path)
-           end
-         end
+        if has_init_file?
+          silence_warnings do
+            # Allow plugins to reference the current configuration object
+            config = initializer.configuration
+            
+            eval(IO.read(init_path), binding, init_path)
+          end
+        end
       end               
   end
 
-  # This Plugin subclass represents a Gem plugin. It behaves exactly like a
-  # "traditional" Rails plugin, but doesn't expose any additional load paths,
-  # since RubyGems has already taken care of things.
+  # This Plugin subclass represents a Gem plugin. Although RubyGems has already
+  # taken care of $LOAD_PATHs, it exposes its load_paths to add them
+  # to Dependencies.load_paths.
   class GemPlugin < Plugin
-
     # Initialize this plugin from a Gem::Specification.
-    def initialize(spec)
-      super(File.join(spec.full_gem_path, "rails"))
+    def initialize(spec, gem)
+      directory = spec.full_gem_path
+      super(directory)
       @name = spec.name
     end
 
-    def valid?
-      true
-    end
-
-    def load_paths
-      []
+    def init_path
+      File.join(directory, 'rails', 'init.rb')
     end
   end
 end
