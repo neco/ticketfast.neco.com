@@ -22,7 +22,7 @@ role :db,  "server2.neco.com", :primary => true
 
 task :after_update_code do
   # handle shared files
-  %w{/config/database.yml /config/thin.yml /bin /pdfs}.each do |file|
+  %w{/config/database.yml /config/newrelic.yml /config/thin.yml /bin /pdfs}.each do |file|
     run "ln -nfs #{shared_path}#{file} #{release_path}#{file}"
   end
   

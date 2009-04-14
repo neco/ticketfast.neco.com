@@ -1,5 +1,6 @@
 db/schema.rb
 config/database.yml
+config/newrelic.yml
 config/locomotive.yml
 config/mongrel_cluster.yml
 tmp/*
