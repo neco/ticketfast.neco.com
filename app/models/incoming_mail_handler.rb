@@ -97,7 +97,7 @@ class IncomingMailHandler < ActionMailer::Base
         puts "Connecting to host"
         imap = nil
         Timeout.timeout(10) {
-          imap = Net::IMAP.new('imap.neco.com')
+          imap = Net::IMAP.new('imap.gmail.com', 993, true)
           #imap.authenticate('LOGIN', 'ticketfast@neco.com', '060381')
           imap.login('ticketfast@neco.com', '060381')
           imap.select('INBOX')

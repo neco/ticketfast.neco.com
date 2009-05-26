@@ -57,8 +57,8 @@ end
 # Include your application configuration below
 ActionMailer::Base.delivery_method = :smtp
 ActionMailer::Base.smtp_settings = {
-  :address => "smtp.emailsrvr.com",
-  :port => 25,
+  :address => "smtp.gmail.com",
+  :port => 587,
   :domain => "neco.com",
   :user_name => "ticketfast@neco.com",
   :password => "060381",
