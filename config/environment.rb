@@ -36,6 +36,7 @@ Rails::Initializer.run do |config|
   # config.active_record.observers = :cacher, :garbage_collector
   
   config.gem "newrelic_rpm"
+  config.gem "ambethia-smtp-tls", :lib => "smtp-tls", :source => "http://gems.github.com/"
 
   # Make Active Record use UTC-base instead of local time
   # config.active_record.default_timezone = :utc
@@ -62,5 +63,5 @@ ActionMailer::Base.smtp_settings = {
   :domain => "neco.com",
   :user_name => "ticketfast@neco.com",
   :password => "060381",
-  :authentication => :login
+  :authentication => :plain
 }
