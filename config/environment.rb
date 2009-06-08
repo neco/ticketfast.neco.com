@@ -63,5 +63,6 @@ ActionMailer::Base.smtp_settings = {
   :domain => "neco.com",
   :user_name => "ticketfast@neco.com",
   :password => "060381",
-  :authentication => :plain
+  :authentication => :plain,
+  :tls => true
 }
