@@ -48,7 +48,7 @@ Rails::Initializer.run do |config|
     :address => "smtp.gmail.com",
     :port => 587,
     :domain => "neco.com",
-    :user_name => "website@neco.com",
+    :user_name => "ticketfast@neco.com",
     :password => "060381",
     :authentication => :plain,
     :tls => true
