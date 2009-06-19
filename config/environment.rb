@@ -43,6 +43,16 @@ Rails::Initializer.run do |config|
   
   # See Rails::Configuration for more options
   config.action_controller.session = { :session_key => "_ticketfast_session", :secret => "ticketsarefunandtheyarefastandireallylikethemfast" }
+  
+  config.action_mailer.smtp_settings = {
+    :address => "smtp.gmail.com",
+    :port => 587,
+    :domain => "neco.com",
+    :user_name => "website@neco.com",
+    :password => "060381",
+    :authentication => :plain,
+    :tls => true
+  }
 end
 
 
@@ -56,6 +66,7 @@ end
 # end
 
 # Include your application configuration below
+=begin
 ActionMailer::Base.delivery_method = :smtp
 ActionMailer::Base.smtp_settings = {
   :address => "smtp.gmail.com",
@@ -66,3 +77,4 @@ ActionMailer::Base.smtp_settings = {
   :authentication => :plain,
   :tls => true
 }
+=end
