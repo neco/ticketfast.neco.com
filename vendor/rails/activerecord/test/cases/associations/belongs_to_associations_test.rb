@@ -12,6 +12,8 @@ require 'models/author'
 require 'models/tag'
 require 'models/tagging'
 require 'models/comment'
+require 'models/sponsor'
+require 'models/member'
 
 class BelongsToAssociationsTest < ActiveRecord::TestCase
   fixtures :accounts, :companies, :developers, :projects, :topics,
@@ -54,8 +56,8 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     original_proxy = citibank.firm
     citibank.firm = another_firm
 
-    assert_equal first_firm.object_id, original_proxy.object_id
-    assert_equal another_firm.object_id, citibank.firm.object_id
+    assert_equal first_firm.object_id, original_proxy.target.object_id
+    assert_equal another_firm.object_id, citibank.firm.target.object_id
   end
 
   def test_creating_the_belonging_object
@@ -90,6 +92,11 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
   def test_with_condition
     assert_equal Company.find(1).name, Company.find(3).firm_with_condition.name
     assert_not_nil Company.find(3).firm_with_condition, "Microsoft should have a firm"
+  end
+
+  def test_with_select
+    assert_equal Company.find(2).firm_with_select.attributes.size, 1
+    assert_equal Company.find(2, :include => :firm_with_select ).firm_with_select.attributes.size, 1
   end
 
   def test_belongs_to_counter
@@ -147,6 +154,23 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     assert_equal 0, Topic.find(t2.id).replies.size
   end
 
+  def test_belongs_to_reassign_with_namespaced_models_and_counters
+    t1 = Web::Topic.create("title" => "t1")
+    t2 = Web::Topic.create("title" => "t2")
+    r1 = Web::Reply.new("title" => "r1", "content" => "r1")
+    r1.topic = t1
+
+    assert r1.save
+    assert_equal 1, Web::Topic.find(t1.id).replies.size
+    assert_equal 0, Web::Topic.find(t2.id).replies.size
+
+    r1.topic = Web::Topic.find(t2.id)
+
+    assert r1.save
+    assert_equal 0, Web::Topic.find(t1.id).replies.size
+    assert_equal 1, Web::Topic.find(t2.id).replies.size
+  end
+
   def test_belongs_to_counter_after_save
     topic = Topic.create!(:title => "monday night")
     topic.replies.create!(:title => "re: monday night", :content => "football")
@@ -183,19 +207,6 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     assert_equal 1, Topic.find(topic.id).send(:read_attribute, "replies_count")
   end
 
-  def test_assignment_before_parent_saved
-    client = Client.find(:first)
-    apple = Firm.new("name" => "Apple")
-    client.firm = apple
-    assert_equal apple, client.firm
-    assert apple.new_record?
-    assert client.save
-    assert apple.save
-    assert !apple.new_record?
-    assert_equal apple, client.firm
-    assert_equal apple, client.firm(true)
-  end
-
   def test_assignment_before_child_saved
     final_cut = Client.new("name" => "Final Cut")
     firm = Firm.find(1)
@@ -206,19 +217,6 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     assert !firm.new_record?
     assert_equal firm, final_cut.firm
     assert_equal firm, final_cut.firm(true)
-  end
-
-  def test_assignment_before_either_saved
-    final_cut = Client.new("name" => "Final Cut")
-    apple = Firm.new("name" => "Apple")
-    final_cut.firm = apple
-    assert final_cut.new_record?
-    assert apple.new_record?
-    assert final_cut.save
-    assert !final_cut.new_record?
-    assert !apple.new_record?
-    assert_equal apple, final_cut.firm
-    assert_equal apple, final_cut.firm(true)
   end
 
   def test_new_record_with_foreign_key_but_no_object
@@ -267,90 +265,6 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     assert_equal 17, reply.replies.size
   end
 
-  def test_store_two_association_with_one_save
-    num_orders = Order.count
-    num_customers = Customer.count
-    order = Order.new
-
-    customer1 = order.billing = Customer.new
-    customer2 = order.shipping = Customer.new
-    assert order.save
-    assert_equal customer1, order.billing
-    assert_equal customer2, order.shipping
-
-    order.reload
-
-    assert_equal customer1, order.billing
-    assert_equal customer2, order.shipping
-
-    assert_equal num_orders +1, Order.count
-    assert_equal num_customers +2, Customer.count
-  end
-
-
-  def test_store_association_in_two_relations_with_one_save
-    num_orders = Order.count
-    num_customers = Customer.count
-    order = Order.new
-
-    customer = order.billing = order.shipping = Customer.new
-    assert order.save
-    assert_equal customer, order.billing
-    assert_equal customer, order.shipping
-
-    order.reload
-
-    assert_equal customer, order.billing
-    assert_equal customer, order.shipping
-
-    assert_equal num_orders +1, Order.count
-    assert_equal num_customers +1, Customer.count
-  end
-
-  def test_store_association_in_two_relations_with_one_save_in_existing_object
-    num_orders = Order.count
-    num_customers = Customer.count
-    order = Order.create
-
-    customer = order.billing = order.shipping = Customer.new
-    assert order.save
-    assert_equal customer, order.billing
-    assert_equal customer, order.shipping
-
-    order.reload
-
-    assert_equal customer, order.billing
-    assert_equal customer, order.shipping
-
-    assert_equal num_orders +1, Order.count
-    assert_equal num_customers +1, Customer.count
-  end
-
-  def test_store_association_in_two_relations_with_one_save_in_existing_object_with_values
-    num_orders = Order.count
-    num_customers = Customer.count
-    order = Order.create
-
-    customer = order.billing = order.shipping = Customer.new
-    assert order.save
-    assert_equal customer, order.billing
-    assert_equal customer, order.shipping
-
-    order.reload
-
-    customer = order.billing = order.shipping = Customer.new
-
-    assert order.save
-    order.reload
-
-    assert_equal customer, order.billing
-    assert_equal customer, order.shipping
-
-    assert_equal num_orders +1, Order.count
-    assert_equal num_customers +2, Customer.count
-  end
-
-
   def test_association_assignment_sticks
     post = Post.find(:first)
 
@@ -376,17 +290,56 @@ class BelongsToAssociationsTest < ActiveRecord::TestCase
     assert_raise(ActiveRecord::ReadOnlyRecord) { companies(:first_client).readonly_firm.save! }
     assert companies(:first_client).readonly_firm.readonly?
   end
-
-  def test_save_fails_for_invalid_belongs_to
-    log = AuditLog.new
-    assert log.valid?
-
-    log.build_developer # Build invalid association
-    assert !log.developer.valid?
-    assert !log.valid?
-    assert_equal "is invalid", log.errors.on("developer")
+  
+  def test_polymorphic_assignment_foreign_type_field_updating
+    # should update when assigning a saved record
+    sponsor = Sponsor.new
+    member = Member.create
+    sponsor.sponsorable = member
+    assert_equal "Member", sponsor.sponsorable_type
     
-    assert !log.save
+    # should update when assigning a new record
+    sponsor = Sponsor.new
+    member = Member.new
+    sponsor.sponsorable = member
+    assert_equal "Member", sponsor.sponsorable_type
+  end
+  
+  def test_polymorphic_assignment_updates_foreign_id_field_for_new_and_saved_records
+    sponsor = Sponsor.new
+    saved_member = Member.create
+    new_member = Member.new
+    
+    sponsor.sponsorable = saved_member
+    assert_equal saved_member.id, sponsor.sponsorable_id
+    
+    sponsor.sponsorable = new_member
+    assert_equal nil, sponsor.sponsorable_id
   end
 
+  def test_belongs_to_proxy_should_not_respond_to_private_methods
+    assert_raise(NoMethodError) { companies(:first_firm).private_method }
+    assert_raise(NoMethodError) { companies(:second_client).firm.private_method }
+  end
+
+  def test_belongs_to_proxy_should_respond_to_private_methods_via_send
+    companies(:first_firm).send(:private_method)
+    companies(:second_client).firm.send(:private_method)
+  end
+
+  def test_save_of_record_with_loaded_belongs_to
+    @account = companies(:first_firm).account
+
+    assert_nothing_raised do
+      Account.find(@account.id).save!
+      Account.find(@account.id, :include => :firm).save!
+    end
+
+    @account.firm.delete
+
+    assert_nothing_raised do
+      Account.find(@account.id).save!
+      Account.find(@account.id, :include => :firm).save!
+    end
+  end
 end

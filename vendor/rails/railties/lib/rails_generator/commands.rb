@@ -40,6 +40,7 @@ module Rails
         # Replay action manifest.  RewindBase subclass rewinds manifest.
         def invoke!
           manifest.replay(self)
+          after_generate
         end
 
         def dependency(generator_name, args, runtime_options = {})
@@ -57,6 +58,17 @@ module Rails
         end
 
         protected
+          def current_migration_number
+            Dir.glob("#{RAILS_ROOT}/#{@migration_directory}/[0-9]*_*.rb").inject(0) do |max, file_path|
+              n = File.basename(file_path).split('_', 2).first.to_i
+              if n > max then n else max end
+            end
+          end
+             
+          def next_migration_number
+            current_migration_number + 1
+          end
+               
           def migration_directory(relative_path)
             directory(@migration_directory = relative_path)
           end
@@ -70,7 +82,11 @@ module Rails
           end
 
           def next_migration_string(padding = 3)
-            Time.now.utc.strftime("%Y%m%d%H%M%S")
+            if ActiveRecord::Base.timestamped_migrations
+              Time.now.utc.strftime("%Y%m%d%H%M%S")
+            else
+              "%.#{padding}d" % next_migration_number
+            end
           end
 
           def gsub_file(relative_destination, regexp, *args, &block)
@@ -88,7 +104,7 @@ module Rails
                 Tempfile.open(File.basename(destination), File.dirname(dst)) do |temp|
                   temp.write render_file(src, file_options, &block)
                   temp.rewind
-                  $stdout.puts `#{diff_cmd} #{dst} #{temp.path}`
+                  $stdout.puts `#{diff_cmd} "#{dst}" "#{temp.path}"`
                 end
                 puts "retrying"
                 raise 'retry diff'
@@ -154,6 +170,7 @@ HELP
         # Ruby or Rails.  In the future, expand to check other namespaces
         # such as the rest of the user's app.
         def class_collisions(*class_names)
+          path = class_names.shift
           class_names.flatten.each do |class_name|
             # Convert to string to allow symbol arguments.
             class_name = class_name.to_s
@@ -165,15 +182,19 @@ HELP
             nesting = class_name.split('::')
             name = nesting.pop
 
+            # Hack to limit const_defined? to non-inherited on 1.9.
+            extra = []
+            extra << false unless Object.method(:const_defined?).arity == 1
+
             # Extract the last Module in the nesting.
             last = nesting.inject(Object) { |last, nest|
-              break unless last.const_defined?(nest)
+              break unless last.const_defined?(nest, *extra)
               last.const_get(nest)
             }
 
             # If the last Module exists, check whether the given
             # class exists and raise a collision if so.
-            if last and last.const_defined?(name.camelize)
+            if last and last.const_defined?(name.camelize, *extra)
               raise_class_collision(class_name)
             end
           end
@@ -277,7 +298,7 @@ HELP
           file(relative_source, relative_destination, template_options) do |file|
             # Evaluate any assignments in a temporary, throwaway binding.
             vars = template_options[:assigns] || {}
-            b = binding
+            b = template_options[:binding] || binding
             vars.each { |k,v| eval "#{k} = vars[:#{k}] || vars['#{k}']", b }
 
             # Render the source file with the temporary binding.
@@ -373,12 +394,14 @@ HELP
           # Thanks to Florian Gross (flgr).
           def raise_class_collision(class_name)
             message = <<end_message
-  The name '#{class_name}' is reserved by Ruby on Rails.
+  The name '#{class_name}' is either already used in your application or reserved by Ruby on Rails.
   Please choose an alternative and run this generator again.
 end_message
             if suggest = find_synonyms(class_name)
-              message << "\n  Suggestions:  \n\n"
-              message << suggest.join("\n")
+              if suggest.any?
+                message << "\n  Suggestions:  \n\n"
+                message << suggest.join("\n")
+              end
             end
             raise UsageError, message
           end

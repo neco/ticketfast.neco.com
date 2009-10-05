@@ -36,13 +36,27 @@ Rails::Initializer.run do |config|
 
   # Activate observers that should always be running
   # config.active_record.observers = :cacher, :garbage_collector
+  
+  config.gem "newrelic_rpm"
+  config.gem "ambethia-smtp-tls", :lib => "smtp-tls", :source => "http://gems.github.com/"
 
   # Make Active Record use UTC-base instead of local time
   # config.active_record.default_timezone = :utc
   
   # See Rails::Configuration for more options
   config.action_controller.session = { :session_key => "_ticketfast_session", :secret => "ticketsarefunandtheyarefastandireallylikethemfast" }
+  
+  config.action_mailer.smtp_settings = {
+    :address => "smtp.gmail.com",
+    :port => 587,
+    :domain => "neco.com",
+    :user_name => "ticketfast@neco.com",
+    :password => "060381",
+    :authentication => :plain,
+    :tls => true
+  }
 end
+
 
 # Add new inflection rules using the following format 
 # (all these examples are active by default):
@@ -54,12 +68,15 @@ end
 # end
 
 # Include your application configuration below
+=begin
 ActionMailer::Base.delivery_method = :smtp
 ActionMailer::Base.smtp_settings = {
-  :address => "smtp.emailsrvr.com",
-  :port => 25,
+  :address => "smtp.gmail.com",
+  :port => 587,
   :domain => "neco.com",
   :user_name => "ticketfast@neco.com",
   :password => "060381",
-  :authentication => :login
+  :authentication => :plain,
+  :tls => true
 }
+=end

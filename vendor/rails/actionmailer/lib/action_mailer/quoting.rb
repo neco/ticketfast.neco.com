@@ -12,7 +12,7 @@ module ActionMailer
     # account multi-byte characters (if executing with $KCODE="u", for instance)
     def quoted_printable_encode(character)
       result = ""
-      character.each_byte { |b| result << "=%02x" % b }
+      character.each_byte { |b| result << "=%02X" % b }
       result
     end
 
@@ -40,7 +40,7 @@ module ActionMailer
     # regular email address, or it can be a phrase followed by an address in
     # brackets. The phrase is the only part that will be quoted, and only if
     # it needs to be. This allows extended characters to be used in the
-    # "to", "from", "cc", and "bcc" headers.
+    # "to", "from", "cc", "bcc" and "reply-to" headers.
     def quote_address_if_necessary(address, charset)
       if Array === address
         address.map { |a| quote_address_if_necessary(a, charset) }

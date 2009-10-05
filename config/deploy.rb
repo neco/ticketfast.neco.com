@@ -1,3 +1,5 @@
+require 'new_relic/recipes'
+
 default_run_options[:pty] = true
 
 set :application, "ticketfast.neco.com"
@@ -19,6 +21,8 @@ role :app, "server2.neco.com"
 role :web, "server2.neco.com"
 role :bdrb, "server2.neco.com"
 role :db,  "server2.neco.com", :primary => true
+
+after "deploy:update", "newrelic:notice_deployment"
 
 task :after_update_code do
   # handle shared files
