@@ -1,0 +1,3 @@
+chronic --version "~> 0.2.3"
+packet --version "~> 0.1.15"
+ambethia-smtp-tls --source http://gems.github.com/
