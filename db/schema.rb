@@ -30,7 +30,7 @@ ActiveRecord::Schema.define(:version => 20080930175329) do
     t.text     "job_data"
     t.string   "job_target"
     t.string   "job_key"
-    t.text     "job_results", :limit => 16777215
+    t.text     "job_results"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "job_status",                      :default => 0
