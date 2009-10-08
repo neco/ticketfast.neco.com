@@ -4,6 +4,6 @@ class ApplicationController < ActionController::Base
   before_filter :assign_empty_js_includes
 
   def assign_empty_js_includes
-    @js_includes = [] 
+    @js_includes = []
   end
 end

@@ -4,9 +4,11 @@ class TicketsMailer < ActionMailer::Base
     @bcc = 'cmiller@neco.com'
     @subject = subject
     @from = 'NECO <ticketfast@neco.com>'
+
     part :content_type => 'text/plain',
          :body => render_message('attached_pdf', body)
-    attachment "application/pdf" do |a| 
+
+    attachment "application/pdf" do |a|
       a.body = File.read(filepath)
       a.filename = 'tickets.pdf'
     end
@@ -16,8 +18,10 @@ class TicketsMailer < ActionMailer::Base
     @recipients = "ticketfast@neco.com"
     @subject = %(Exchange | #{data[:event_text]} | Section: #{data[:section]}, Row: #{data[:row]}, Seat: #{data[:seat]})
     @from = "NECO <ticketfast@neco.com>"
+
     part :content_type => 'text/plain',
          :body => render_message('exchange', body)
+
     attachment 'application/pdf' do |a|
       a.body = File.read(filepath)
       a.filename = 'tickets.pdf'

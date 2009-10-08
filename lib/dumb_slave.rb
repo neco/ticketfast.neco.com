@@ -6,14 +6,15 @@ class DumbSlave
   def initialize
     @base_uri = 'http://ticketfast.neco.com/'
   end
-  
+
   def get_job
     Marshal.load(Base64.decode64(fetch_request("#{@base_uri}ticket_request_server/get_job", :send_cookies => false)))
   end
-  
+
   def work
     loop do
       job = nil
+
       begin
         puts "Asking for work"
         Timeout.timeout(10) {
@@ -24,9 +25,9 @@ class DumbSlave
         sleep(30)
         next
       end
-      
+
       puts "Received job: #{job.inspect}"
-      
+
       case job[:action]
         when :sleep
           puts "* Sleeping for #{job[:duration]} seconds"
@@ -41,23 +42,24 @@ class DumbSlave
       end
     end
   end
-  
+
   def do_fetch_request_job(job)
     src = fetch_request(job[:uri], job[:options])
     cookies = File.read('mycookies')
     results_str = Base64.encode64(Marshal.dump({:src => src, :cookies => cookies}))
     fetch_request("#{@base_uri}ticket_request_server/submit_work", :send_cookies => false, :post_data => {'results' => CGI::escape(results_str), 'client_key' => CGI::escape(job[:client_key])})
   end
-  
-  def fetch_request(uri, options = {})        
-    File.open('cookies', 'w') {|f| f.write options[:cookies]} if options[:cookies]
-    
+
+  def fetch_request(uri, options = {})
+    File.open('cookies', 'w') { |f| f.write options[:cookies] } if options[:cookies]
+
     if options[:post_data]
-      options[:post_data] = options[:post_data].collect{|k,v| "#{k}=#{v}"}.join('&') 
-      File.open('postdata', 'w') {|f| f.write options[:post_data]}
+      options[:post_data] = options[:post_data].collect { |k, v| "#{k}=#{v}" }.join('&')
+      File.open('postdata', 'w') { |f| f.write options[:post_data] }
     end
-    
+
     `curl -s #{%[--data "@postdata" ] if options[:post_data]} --insecure "#{uri}" -c mycookies #{'-b cookies' if options[:send_cookies]} -u "neco:hurricane123" -o src_out`
+
     if options[:binary]
       f = File.open('src_out')
       f.binmode

@@ -38,11 +38,11 @@ Viewing <%= @events.size %> events<br />
 <%= event.venue.code %>
 </td>
 <td>
-<% if event.venue and event.venue.name and !event.venue.name.empty? %>
-<%= event.venue.inspect %>
-<%= event.venue.name %>
+<% if event.venue && !event.venue.name.blank? %>
+  <%= event.venue.inspect %>
+  <%= event.venue.name %>
 <% else %>
-<input type="text" class="text-field" name="venue_names[<%= event.venue.id %>]" />
+  <input type="text" class="text-field" name="venue_names[<%= event.venue.id %>]" />
 <% end %>
 </td>
 <td>

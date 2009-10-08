@@ -40,10 +40,10 @@ or:
           %input.text-field{:type => 'text', :style => 'width:150px', :name => "event_dates[#{event.id}]", :id => "event_date_text_#{event.id}", :value => (event.occurs_at.strftime("%m/%d/%Y %I:%M %p") if event.occurs_at)}
           %div{:id => "cal-container-#{event.id}", :style => 'margin-right:10px;margin-bottom:10px;border:1px solid black;display:none;position:absolute;'}
           :javascript
-            var eventDateCal#{event.id} = new YAHOO.widget.Calendar("cal-#{event.id}","cal-container-#{event.id}", { mindate:"1/1/2006", 
+            var eventDateCal#{event.id} = new YAHOO.widget.Calendar("cal-#{event.id}", "cal-container-#{event.id}", { mindate:"1/1/2006", 
               maxdate:"12/31/2010", title:"Choose a date:", close:true });
 
-            function handleSelect#{event.id}(type,args,obj) { 
+            function handleSelect#{event.id}(type, args, obj) { 
               var dates = args[0]; 
               var date = dates[0]; 
               var year = date[0], month = date[1], day = date[2]; 
@@ -58,7 +58,7 @@ or:
         %td= event.venue.code if event.venue
         %td
           - if event.venue
-            - if event.venue.name and !event.venue.name.empty? 
+            - if event.venue.name && !event.venue.name.empty? 
               = event.venue.name 
             - else 
               %input.text-field{:type => 'text', :name => "venue_names[#{event.id}]"}/

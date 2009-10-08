@@ -7,8 +7,7 @@ if events.size > 0
 <select name="event_id">
 
 <%=
-
-events.collect{|event| datetime = event.occurs_at
+events.collect { |event| datetime = event.occurs_at
   "<option value=\"#{event.id}\">#{datetime.strftime "%m/%d %I:%M %P"}</option>" if datetime
 }.join %>
 </select>
