@@ -278,8 +278,8 @@ private
       Ticket.find(id).view!
     end
 
-    src_path = "#{Rails.root}/#{Setting['pdf_dir']}"
-    dest_filepath = "#{Rails.root}/#{Setting['tmp_dir']}/all_#{ticket_ids.first}.pdf"
+    src_path = "#{Rails.root}/#{Settings.pdf_dir}"
+    dest_filepath = "#{Rails.root}/#{Settings.tmp_dir}/all_#{ticket_ids.first}.pdf"
     `pdftk #{ticket_ids.collect { |t| "#{src_path}/#{t}.pdf " }.join} cat output #{dest_filepath}`
     dest_filepath
   end

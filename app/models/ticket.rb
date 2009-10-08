@@ -11,7 +11,7 @@ class Ticket < ActiveRecord::Base
   named_scope :fetched, :conditions => archived.merge(:unfetched => false)
 
   def before_destroy
-    `rm #{Rails.root}/#{Setting['pdf_dir']}/#{id}.pdf`
+    `rm #{Rails.root}/#{Settings.pdf_dir}/#{id}.pdf`
   end
 
   def create_quickview!
@@ -30,11 +30,11 @@ class Ticket < ActiveRecord::Base
   end
 
   def pdf_rel_filepath
-    "#{Setting['pdf_dir']}/#{id}.pdf"
+    "#{Settings.pdf_dir}/#{id}.pdf"
   end
 
   def jpg_filepath
-    "#{Rails.root}/#{Setting['pdf_dir']}/jpgs/#{id}.jpg"
+    "#{Rails.root}/#{Settings.pdf_dir}/jpgs/#{id}.jpg"
   end
 
   def view!

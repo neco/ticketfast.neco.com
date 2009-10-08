@@ -4,8 +4,8 @@ require 'timeout'
 class IncomingMailHandler < ActionMailer::Base
   def receive(email)
     ticket_count = 0
-    tmp_dir = "#{Rails.root}/#{Setting['tmp_dir']}"
-    pdf_dir = "#{Rails.root}/#{Setting['pdf_dir']}"
+    tmp_dir = "#{Rails.root}/#{Settings.tmp_dir}"
+    pdf_dir = "#{Rails.root}/#{Settings.pdf_dir}"
 
     # Fix the inconvenient fact that Net::IMAP ignores message/* MIME types
     email.parts.each do |part|

@@ -6,6 +6,7 @@ require File.join(File.dirname(__FILE__), 'boot')
 
 Rails::Initializer.run do |config|
   config.gem 'chronic', :version => '~> 0.2.3'
-  config.gem 'packet', :version => '~> 0.1.15'
   config.gem 'haml', :version => '~> 2.0.9'
+  config.gem 'packet', :version => '~> 0.1.15'
+  config.gem 'settingslogic', :version => '~> 1.0.0'
 end

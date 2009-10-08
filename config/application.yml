@@ -1,0 +1,14 @@
+# Paths are relative to Rails.root.
+
+defaults: &defaults
+  tmp_dir: tmp
+  pdf_dir: pdfs
+
+development:
+  <<: *defaults
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

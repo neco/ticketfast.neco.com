@@ -140,8 +140,8 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
 
 
             # factor this out where possible
-            tmp_dir = "#{Rails.root}/#{Setting['tmp_dir']}"
-            pdf_dir = "#{Rails.root}/#{Setting['pdf_dir']}"
+            tmp_dir = "#{Rails.root}/#{Settings.tmp_dir}"
+            pdf_dir = "#{Rails.root}/#{Settings.pdf_dir}"
 
             client.order_data.size.times do
               begin
