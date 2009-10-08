@@ -18,7 +18,7 @@ class TicketsController < ApplicationController
 
     find_include = { :event => :venue }
 
-    find_conditions = ['unparsed = ? && unfetched = ?', params[:unparsed] ? true : false, params[:unfetched] ? true : false]
+    find_conditions = ['unparsed = ? AND unfetched = ?', params[:unparsed] ? true : false, params[:unfetched] ? true : false]
     params[:conditions].each do |field, val|
       find_conditions[0] += " AND #{field} LIKE ?"
       find_conditions << "#{val.strip}%"
