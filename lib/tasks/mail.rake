@@ -1,17 +1,17 @@
-namespace :ticketfast do
-  desc 'Process and import new mail'
-  task :process_mail => :environment do
+namespace :mail do
+  desc 'Process and import new mail.'
+  task :process => :environment do
     IncomingMailHandler.process_new_mail
   end
   
-  desc 'Run tm fetcher on all enabled accounts'
-  task :fetch_tm => :environment do
+  desc 'Run fetcher on all enabled accounts.'
+  task :fetch => :environment do
     MiddleMan.worker(:ticket_request_worker).async_save_unseen_tickets
     puts "Running worker"
   end
   
-  desc 'Reparse all unparsed tickets'
-  task :reparse_all => :environment do
+  desc 'Reparse all unparsed tickets.'
+  task :reparse => :environment do
     total = Ticket.unparsed.count
     i = 0
     parsed = 0
