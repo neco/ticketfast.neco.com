@@ -1,1 +1,0 @@
-/var/www/ticketfast.neco.com/current/script/runner "IncomingMailHandler.process_new_mail" -e production
