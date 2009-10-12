@@ -32,7 +32,7 @@ class FetcherJob < ActiveRecord::Base
   end
 
   def self.get_job(remote_ip)
-    job = first(:conditions => {:job_target => remote_ip, :job_status => status(:open)}, :order => 'created_at asc')
+    job = first(:conditions => {:job_target => remote_ip, :job_status => status(:open)}, :order => 'created_at ASC')
 
     unless job || find_by_job_target(remote_ip)
       job = first(:conditions => {:job_target => nil, :job_status => status(:open)}, :order => 'created_at ASC')

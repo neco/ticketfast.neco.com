@@ -4,8 +4,6 @@ require 'timeout'
 class IncomingMailHandler < ActionMailer::Base
   def receive(email)
     ticket_count = 0
-    tmp_dir = "#{Rails.root}/#{Settings.tmp_dir}"
-    pdf_dir = "#{Rails.root}/#{Settings.pdf_dir}"
 
     # Fix the inconvenient fact that Net::IMAP ignores message/* MIME types
     email.parts.each do |part|
@@ -23,7 +21,7 @@ class IncomingMailHandler < ActionMailer::Base
       puts "it is a pdf"
 
       filename = "tmp.pdf"
-      filepath = tmp_dir + '/' + filename
+      filepath = Settings.tmp_dir + '/' + filename
 
       File.open(filepath, File::CREAT | File::TRUNC | File::WRONLY, 0644) do |f|
         f.write(attachment.read)
@@ -38,14 +36,14 @@ class IncomingMailHandler < ActionMailer::Base
 
       # Split PDF into pages, filenames are page_01.pdf, page_02.pdf, etc.
       # Remove original PDF and a PDF doc descriptor that is created also
-      `pdftk #{filepath} burst output #{tmp_dir}/page_%02d.pdf && rm doc_data.txt && rm #{filepath}`
+      `pdftk #{filepath} burst output #{Settings.tmp_dir}/page_%02d.pdf && rm doc_data.txt && rm #{filepath}`
 
       # Set up email attributes
       email_attrs = {:email_subject => email.subject, :email_from => email.from.first, :email_sent_at => email.date}
 
       # Loop through each PDF page, parse text, create Ticket, rename to
       # {ticket.id}.pdf and place in pdfs directory
-      Dir.glob("#{tmp_dir}/page_*pdf").each do |page_filepath|
+      Dir.glob("#{Settings.tmp_dir}/page_*pdf").each do |page_filepath|
         puts 'doing a page'
         `pdftotext #{page_filepath}`
         text_filepath = page_filepath.gsub /pdf$/, 'txt'
@@ -62,7 +60,7 @@ class IncomingMailHandler < ActionMailer::Base
 
           # Place the PDF ticket in the right place and clean up temporary
           # pdftotext output file
-          `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
+          `mv #{page_filepath} #{Settings.pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
 
           ticket_count += 1
           next
@@ -81,7 +79,7 @@ class IncomingMailHandler < ActionMailer::Base
 
         # Place the PDF ticket in the right place and clean up temporary
         # pdftotext output file
-        `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
+        `mv #{page_filepath} #{Settings.pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
         ticket_count += 1
       end
     end if email.attachments

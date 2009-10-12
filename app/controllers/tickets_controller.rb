@@ -14,7 +14,7 @@ class TicketsController < ApplicationController
     sort = params[:sort] || 'none'
     order_by = sort != 'none' ? sort.gsub(/^.*?\.?([^\.]+)\.([^\.]+)$/, '\1s.\2') : 'tickets.section, tickets.row, tickets.seat'
     order_by = 'tickets.id' if order_by == 'id'
-    dir = params[:dir] || 'asc'
+    dir = params[:dir] || 'ASC'
 
     find_include = { :event => :venue }
 
@@ -272,15 +272,16 @@ class TicketsController < ApplicationController
     send_file @ticket.jpg_filepath
   end
 
-private
-  def create_composite_pdf ticket_ids
-    ticket_ids.each do |id|
-      Ticket.find(id).view!
-    end
+  def create_composite_pdf(ticket_ids)
+    Ticket.find(ticket_ids).each(&:view!)
 
-    src_path = "#{Rails.root}/#{Settings.pdf_dir}"
-    dest_filepath = "#{Rails.root}/#{Settings.tmp_dir}/all_#{ticket_ids.first}.pdf"
-    `pdftk #{ticket_ids.collect { |t| "#{src_path}/#{t}.pdf " }.join} cat output #{dest_filepath}`
-    dest_filepath
+    source = Settings.pdf_dir
+    source_paths = ticket_ids.collect { |t| "#{source}/#{t}.pdf" }
+    target = "#{Settings.tmp_dir}/all_#{ticket_ids.first}.pdf"
+
+    `pdftk #{source_paths.join(' ')} cat output #{target}`
+
+    target
   end
+  private :create_composite_pdf
 end

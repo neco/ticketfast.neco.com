@@ -1,8 +1,8 @@
 # Paths are relative to Rails.root.
 
 defaults: &defaults
-  tmp_dir: tmp
-  pdf_dir: pdfs
+  tmp_dir: <%= File.join(Rails.root, 'tmp') %>
+  pdf_dir: <%= File.join(Rails.root, 'pdfs') %>
 
 development:
   <<: *defaults

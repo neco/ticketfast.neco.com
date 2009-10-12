@@ -138,16 +138,11 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
               old_tick.update_attribute(:tm_account_id, tm_acct.id) if old_tick
             end
 
-
-            # factor this out where possible
-            tmp_dir = "#{Rails.root}/#{Settings.tmp_dir}"
-            pdf_dir = "#{Rails.root}/#{Settings.pdf_dir}"
-
             client.order_data.size.times do
               begin
                 logger.debug "Working on saving a ticket"
 
-                filepath = "#{tmp_dir}/tmclient_#{unique_id}_pdf.pdf"
+                filepath = "#{Settings.tmp_dir}/tmclient_#{unique_id}_pdf.pdf"
 
                 order = client.order_data.first
 
@@ -172,13 +167,13 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
                 # Split PDF into pages, filenames are page_01.pdf, page_02.pdf,
                 # etc. Remove original PDF and a PDF doc descriptor that is
                 # created also
-                `pdftk #{filepath} burst output #{tmp_dir}/page_#{unique_id}_%02d.pdf && rm doc_data.txt && rm #{filepath}`
+                `pdftk #{filepath} burst output #{Settings.tmp_dir}/page_#{unique_id}_%02d.pdf && rm doc_data.txt && rm #{filepath}`
 
                 logger.debug "Burst! going through pages"
 
                 # Loop through each PDF page, parse text, create Ticket, rename
                 # to {ticket.id}.pdf and place in pdfs directory
-                Dir.glob("#{tmp_dir}/page_#{unique_id}_*pdf").each do |page_filepath|
+                Dir.glob("#{Settings.tmp_dir}/page_#{unique_id}_*pdf").each do |page_filepath|
                   logger.debug "In a page, converting to text"
                   `pdftotext #{page_filepath}`
                   text_filepath = page_filepath.gsub /pdf$/, 'txt'
@@ -215,7 +210,7 @@ class TicketRequestWorker < BackgrounDRb::MetaWorker
 
                   # Place the PDF ticket in the right place and clean up
                   # temporary pdftotext output file
-                  `mv #{page_filepath} #{pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
+                  `mv #{page_filepath} #{Settings.pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
                 end
               rescue Exception => e
                 logger.debug "IN LOOP EXCEPTION! #{e.inspect}"
