@@ -1,8 +1,12 @@
-# Paths are relative to Rails.root.
-
 defaults: &defaults
   tmp_dir: <%= File.join(Rails.root, 'tmp') %>
-  pdf_dir: <%= File.join(Rails.root, 'pdfs') %>
+  pdf_dir: <%= File.join(Rails.root, 'tmp', 'pdfs') %>
+  mailer_queue: <%= File.join(Rails.root, 'tmp', 'mailer_queue') %>
+
+  amazon:
+    access_key: 'AKIAJYSFBIJI6CVQCE2A'
+    secret_key: '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'
+    bucket: 'media.ticketfast.neco.com'
 
 development:
   <<: *defaults

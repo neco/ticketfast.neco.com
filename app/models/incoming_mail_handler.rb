@@ -5,84 +5,67 @@ class IncomingMailHandler < ActionMailer::Base
   def receive(email)
     ticket_count = 0
 
-    # Fix the inconvenient fact that Net::IMAP ignores message/* MIME types
+    # Fix the inconvenient fact that Net::IMAP ignores message/* MIME types.
     email.parts.each do |part|
       next unless part.content_type == 'message/rfc822'
-      IncomingMailHandler.receive part.body
+      IncomingMailHandler.receive(part.body)
     end
 
-    email.attachments.each do |attachment|
-      puts "dealing with attachment"
+    if email.attachments
+      email.attachments.each do |attachment|
+        # Ensure that the MIME type indicates that the part is a PDF attachment.
+        next unless %w(application/pdf application/octet-stream).include?(attachment.content_type)
 
-      # Make sure the MIME type indicates the part is a PDF attachment
-      puts attachment.content_type
-      next unless ['application/pdf', 'application/octet-stream'].include?(attachment.content_type)
+        filepath = File.join(Settings.tmp_dir, 'tmp.pdf')
+        File.open(filepath, 'w', 0644) { |f| f.write(attachment.read) }
 
-      puts "it is a pdf"
+        # Remove owner restrictions and decrypt the PDF.
+        `#{Rails.root}/bin/guapdf -y #{filepath}`
 
-      filename = "tmp.pdf"
-      filepath = Settings.tmp_dir + '/' + filename
+        if File.exists?(filepath.gsub(/\.pdf$/, '.decrypted.pdf'))
+          File.delete(filepath)
+          filepath = filepath.gsub(/\.pdf$/, '.decrypted.pdf')
+        end
 
-      File.open(filepath, File::CREAT | File::TRUNC | File::WRONLY, 0644) do |f|
-        f.write(attachment.read)
-      end
+        # Split PDF into pages, filenames are page_01.pdf, page_02.pdf, etc.
+        # Remove original PDF and a PDF doc descriptor that is created also
+        `pdftk #{filepath} burst output #{Settings.tmp_dir}/page_%02d.pdf`
+        File.delete('doc_data.txt', filepath)
 
-      # Remove owner restrictions and decrypt the PDF
-      `#{Rails.root}/bin/guapdf -y #{filepath}`
-      if File.exists?( filepath.gsub(/\.pdf$/, '.decrypted.pdf') )
-        `rm #{filepath}`
-        filepath = filepath.gsub(/\.pdf$/, '.decrypted.pdf')
-      end
+        email_attrs = {
+          :email_subject => email.subject,
+          :email_from => email.from.first,
+          :email_sent_at => email.date
+        }
 
-      # Split PDF into pages, filenames are page_01.pdf, page_02.pdf, etc.
-      # Remove original PDF and a PDF doc descriptor that is created also
-      `pdftk #{filepath} burst output #{Settings.tmp_dir}/page_%02d.pdf && rm doc_data.txt && rm #{filepath}`
+        # Loop through each PDF page, parse text, create Ticket, rename to
+        # {ticket.id}.pdf and place into the pdfs directory.
+        Dir.glob("#{Settings.tmp_dir}/page_*pdf").each do |page_filepath|
+          `pdftotext #{page_filepath}`
+          text_filepath = page_filepath.gsub(/\.pdf$/, '.txt')
+          pdf_text = File.read(text_filepath)
 
-      # Set up email attributes
-      email_attrs = {:email_subject => email.subject, :email_from => email.from.first, :email_sent_at => email.date}
+          # Attempt to parse the text-converted PDF
+          ticket_parser = TicketParser.new(pdf_text)
+          ticket_parser.parse_and_save!
 
-      # Loop through each PDF page, parse text, create Ticket, rename to
-      # {ticket.id}.pdf and place in pdfs directory
-      Dir.glob("#{Settings.tmp_dir}/page_*pdf").each do |page_filepath|
-        puts 'doing a page'
-        `pdftotext #{page_filepath}`
-        text_filepath = page_filepath.gsub /pdf$/, 'txt'
-        pdf_text = File.read(text_filepath)
-        puts 'trying to parse!'
-        # Attempt to parse the text-converted PDF
-        ticket_parser = TicketParser.new(pdf_text)
-        ticket_parser.parse_and_save!
+          if ticket_parser.parsed?
+            ticket = ticket_parser.saved_ticket
+            ticket.update_attributes(email_attrs)
+          else
+            # If parsing failed, save the PDF and add it to the queue
+            ticket = Ticket.create({ :unparsed => true }.merge(email_attrs))
+          end
 
-        # If parsing failed, save the PDF and add it to the queue
-        unless ticket_parser.parsed?
-          puts "no luck"
-          ticket = Ticket.create({:unparsed => true}.merge(email_attrs))
-
-          # Place the PDF ticket in the right place and clean up temporary
-          # pdftotext output file
-          `mv #{page_filepath} #{Settings.pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
+          # Place the PDF ticket in the right place and remove temporary file.
+          ticket_key = File.join('pdfs', "#{ticket.id}.pdf")
+          BUCKET.put(ticket_key, File.read(page_filepath), 'public-read')
+          File.delete(page_filepath, text_filepath)
 
           ticket_count += 1
-          next
         end
-
-        puts "we are good!!"
-
-        ticket = ticket_parser.saved_ticket
-        ticket.update_attributes(email_attrs)
-        puts ticket.inspect
-
-        if ticket.errors.size > 0
-          puts "we have errors"
-          ticket.errors.collect { |f, e| puts "#{f} #{e}" }
-        end
-
-        # Place the PDF ticket in the right place and clean up temporary
-        # pdftotext output file
-        `mv #{page_filepath} #{Settings.pdf_dir}/#{ticket.id}.pdf && rm #{text_filepath}`
-        ticket_count += 1
       end
-    end if email.attachments
+    end
 
     ticket_count
   end
@@ -94,18 +77,13 @@ class IncomingMailHandler < ActionMailer::Base
 
     begin
       while message_count < new_message_count
-        unless message_count < 0
-          puts "Waiting 20 seconds to reconnect..."
-          sleep 20
-        end
+        sleep 20 if message_count < 0
 
         message_count = new_message_count
-        puts "Connecting to host"
         imap = nil
 
         Timeout.timeout(10) do
           imap = Net::IMAP.new('imap.gmail.com', 993, true)
-          #imap.authenticate('LOGIN', 'ticketfast@neco.com', '060381')
           imap.login('ticketfast@neco.com', '060381')
           imap.select('INBOX')
         end

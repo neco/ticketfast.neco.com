@@ -4,26 +4,19 @@ class TicketsMailerQueue
   def self.process_queue
     while t = self.pop
       begin
-        puts "Trying to shoot an email off, will timeout in 20 seconds"
-
         Timeout.timeout(20) do
-          puts t.inspect
           TicketsMailer.deliver_attached_pdf *t
         end
 
-        puts "Success"
       rescue Timeout::Error => e
-        puts "Failed, putting it back on the queue, waiting 60 seconds to try again..."
         self.push *t
         sleep 60
       end
     end
-
-    puts "All done, queue should be empty."
   end
 
   def self.queue_file
-    @@queue_file ||= "#{Rails.root}/config/mailer_queue"
+    @@queue_file ||= Settings.mailer_queue
   end
 
   def self.get_queue
@@ -34,7 +27,7 @@ class TicketsMailerQueue
     rescue
     end
 
-    queue ||= []
+    queue || []
   end
 
   def self.set_queue queue

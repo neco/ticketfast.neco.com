@@ -1,4 +1,5 @@
 chronic --version "~> 0.2.3"
 haml --version "~> 2.0.9"
-packet --version "~> 0.1.15"
 settingslogic --version "~> 1.0.0"
+packet --version "~> 0.1.15"
+right_aws --version "~> 1.10.0"
